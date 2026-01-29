@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg-main: #060608;
+  --bg-card: rgba(18, 18, 22, 0.8);
+
+  --accent-ambre: #DB835C;
+  --accent-ambre-glow: rgba(219, 131, 92, 0.5);
+
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --border-ambre: rgba(219, 131, 92, 0.35);
+
+  --font-main: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- FORCE ROOT VISIBILITY --- */
+html,
+body,
+#root {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: var(--bg-main) !important;
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  overflow: hidden;
+  display: block !important;
+  /* Ensuring it's not display: none */
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* --- VIBRANT AURORA SYSTEM --- */
+
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--bg-main);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mesh-flow {
+  position: absolute;
+  width: 200vw;
+  height: 200vw;
+  top: -50vw;
+  left: -50vw;
+  background:
+    radial-gradient(circle at 70% 30%, rgba(219, 131, 92, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 30% 70%, rgba(219, 131, 92, 0.1) 0%, transparent 45%);
+  filter: blur(80px);
+  animation: auroraSpin 50s infinite linear;
+}
+
+@keyframes auroraSpin {
+  from {
+    transform: rotate(0deg) scale(1.1);
+  }
+
+  to {
+    transform: rotate(360deg) scale(1.1);
+  }
+}
+
+.hud-overlay {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 90%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --- LUXURY BENTO & GLASS --- */
+
+.glass-v3 {
+  background: var(--bg-card);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border-radius: 32px;
+}
+
+.luxury-text {
+  font-size: 3.5rem;
+  font-weight: 850;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  background: linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.4) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.mono-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--accent-ambre);
+  font-weight: 800;
+  text-transform: uppercase;
+}

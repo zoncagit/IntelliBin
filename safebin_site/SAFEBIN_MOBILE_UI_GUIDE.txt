@@ -1,0 +1,54 @@
+================================================================================
+          SAFEBIN MOBILE UI DESIGN SYSTEM & STYLE GUIDE
+================================================================================
+
+1. CORE PALETTE (HEX & RGBA)
+--------------------------------------------------------------------------------
+- PRIMARY ACCENT:    #DB835C (Ambre / Tactical Orange)
+- ACCENT GLOW:       rgba(219, 131, 92, 0.4)
+- ACCENT GLOW (STR): rgba(219, 131, 92, 0.6)
+- BG PURE (LIGHT):   #FFFFFF
+- BG PURE (DARK):    #050505
+- GRID COLOR:        rgba(219, 131, 92, 0.05)
+- ALERT / ERROR:     #FF3B30
+- TEXT MAIN:         #1D1D1F
+- TEXT SECONDARY:    #989796
+
+2. TYPOGRAPHY (HIERARCHY)
+--------------------------------------------------------------------------------
+- PRIMARY (UI):      Inter (Sans-Serif)
+  - Titles:          Font-weight 800 (Extra Bold)
+  - Body:            Font-weight 400 (Regular)
+- TECHNICAL (MONO):  JetBrains Mono / Fira Code
+  - Metadata:        Font-size: 0.7rem | Text-transform: uppercase
+  - HUD Elements:    Font-weight 700 (Bold)
+
+3. COMPONENT STYLES
+--------------------------------------------------------------------------------
+- GLASSMORPHISM:
+  - Background:      rgba(255, 255, 255, 0.85) [Light] or rgba(15, 15, 15, 0.9) [Dark]
+  - Blur Radius:     20px to 40px
+  - Border:          1px solid rgba(219, 131, 92, 0.2)
+  - Corner Radius:   12px to 24px (Mobile Cards)
+
+- NEON BUTTONS:
+  - Background:      #DB835C
+  - Shadow:          0 10px 30px rgba(219, 131, 92, 0.4)
+  - Active State:    Increase brightness and glow intensity.
+
+4. MOBILE DESIGN PRINCIPLES
+--------------------------------------------------------------------------------
+- TACTICAL HUD:      Keep the background grid (40px) visible but subtle.
+- SIGNATURE LINE:    Use the animated ambre line (2px height) under hero titles.
+- STATUS DOTS:       Implement pulsing ambre indicators for all "SYS_ACTIVE" states.
+- SPOTLIGHT:         Interactive ambre radial gradients on card hover/touch.
+
+5. ASSETS & VISUALS
+--------------------------------------------------------------------------------
+- GRID SYSTEM:       Graph paper style (linear-gradients).
+- ENERGY BLOBS:      Subtle ambre blur blobs (60px blur) in background.
+- ICONOGRAPHY:       Clinical / Minimalist line icons.
+
+================================================================================
+BUILD v1.0.4-STABLE | LOGISTICS // ARCHITECTURE // PROTOCOL
+================================================================================

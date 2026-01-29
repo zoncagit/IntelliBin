@@ -1,0 +1,26 @@
+name: safebi_mobile2ndversion
+description: A new Flutter project for SAFEBIN Tactical Command.
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.5
+  provider: ^6.0.5
+  google_fonts: ^5.1.0
+  flutter_animate: ^4.2.0
+  model_viewer_plus: ^1.7.0 # For 3D Model visualization
+  shared_preferences: ^2.2.2 # For local storage persistence
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/model.glb

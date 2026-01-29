@@ -1,0 +1,106 @@
+{
+  "incompatibility_rules": [
+    {
+      "category_pair": ["Acid", "Metal"],
+      "risk_level": "Danger",
+      "hazard_type": "Gas Release",
+      "explanation": "Acids react with metals producing hydrogen gas, which is flammable and can cause explosions in enclosed spaces."
+    },
+    {
+      "category_pair": ["Acid", "Base"],
+      "risk_level": "Caution",
+      "hazard_type": "Exothermic Reaction",
+      "explanation": "Neutralization reactions release heat. Large quantities may cause boiling or spattering."
+    },
+    {
+      "category_pair": ["Acid", "Water-Reactive"],
+      "risk_level": "Danger",
+      "hazard_type": "Violent Reaction",
+      "explanation": "Water-reactive substances can react violently with aqueous acids, potentially causing fire or explosion."
+    },
+    {
+      "category_pair": ["Oxidizer", "Organic"],
+      "risk_level": "Danger",
+      "hazard_type": "Fire/Explosion",
+      "explanation": "Oxidizers can cause rapid combustion of organic materials, leading to fires or explosions."
+    },
+    {
+      "category_pair": ["Oxidizer", "Solvent"],
+      "risk_level": "Danger",
+      "hazard_type": "Fire/Explosion",
+      "explanation": "Oxidizers react violently with organic solvents, potentially causing fire or explosion."
+    },
+    {
+      "category_pair": ["Oxidizer", "Metal"],
+      "risk_level": "Danger",
+      "hazard_type": "Fire/Explosion",
+      "explanation": "Strong oxidizers can react violently with reactive metals, causing fire or explosion."
+    },
+    {
+      "category_pair": ["Metal", "Water-Reactive"],
+      "risk_level": "Danger",
+      "hazard_type": "Fire/Explosion",
+      "explanation": "Reactive metals can ignite or explode when exposed to water or moisture."
+    },
+    {
+      "category_pair": ["Halogen", "Metal"],
+      "risk_level": "Danger",
+      "hazard_type": "Violent Reaction",
+      "explanation": "Halogens react violently with many metals, especially alkali metals like sodium and potassium."
+    },
+    {
+      "category_pair": ["Halogen", "Base"],
+      "risk_level": "Caution",
+      "hazard_type": "Toxic Gas",
+      "explanation": "Mixing halogens with bases can release toxic chlorine or chloramine gases."
+    },
+    {
+      "category_pair": ["Acid", "Oxidizer"],
+      "risk_level": "Caution",
+      "hazard_type": "Toxic Gas",
+      "explanation": "Some acid-oxidizer combinations can release toxic gases like chlorine or nitrogen oxides."
+    }
+  ],
+  "waste_stream_rules": {
+    "AqueousAcid": {
+      "accepts_categories": ["Acid"],
+      "max_ph": 6,
+      "description": "Dilute aqueous acid solutions only"
+    },
+    "AqueousBase": {
+      "accepts_categories": ["Base"],
+      "min_ph": 8,
+      "description": "Dilute aqueous base solutions only"
+    },
+    "HalogenatedSolvent": {
+      "accepts_categories": ["Solvent"],
+      "requires_halogenated": true,
+      "description": "Chlorinated and other halogenated solvents"
+    },
+    "NonHalogenatedSolvent": {
+      "accepts_categories": ["Solvent", "Organic"],
+      "requires_halogenated": false,
+      "description": "Non-halogenated organic solvents"
+    },
+    "Oxidizer": {
+      "accepts_categories": ["Oxidizer"],
+      "description": "Oxidizing agents only - keep separate from organics"
+    },
+    "ReactiveMetal": {
+      "accepts_categories": ["Metal"],
+      "description": "Reactive metals stored under mineral oil"
+    },
+    "HeavyMetal": {
+      "accepts_categories": ["Heavy-Metal"],
+      "description": "Heavy metal solutions - mercury, lead, cadmium, etc."
+    },
+    "Corrosive": {
+      "accepts_categories": ["Acid", "Base"],
+      "description": "Concentrated corrosive substances"
+    },
+    "GeneralChemical": {
+      "accepts_categories": ["Unknown"],
+      "description": "General chemical waste - requires review"
+    }
+  }
+}

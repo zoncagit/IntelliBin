@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAFEBIN | Intelligent Laboratory Safety</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+
+</head>
+
+<body>
+  <!-- Background Grid -->
+  <div class="grid-background"></div>
+
+  <!-- 3D Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- UI Overlay -->
+  <main>
+    <!-- Tactical Header -->
+    <header class="tactical-header">
+      <div class="header-container">
+        <div class="nav-brand">
+          <span class="brand-text">SAFEBIN</span>
+          <div class="brand-status">
+            <span class="status-dot"></span>
+            <span class="status-label">SYS_ACTIVE</span>
+          </div>
+        </div>
+
+        <nav class="nav-main">
+          <a href="#tech" class="nav-link">[ PROTOCOL ]</a>
+          <a href="#security" class="nav-link">[ ARCHITECTURE ]</a>
+          <a href="#how-it-works" class="nav-link">[ LOGISTICS ]</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="header-cta">
+            <span class="cta-text">RESERVE_UNIT</span>
+            <div class="cta-glimmer"></div>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <span class="hero-badge">🔬 Laboratory Innovation</span>
+        <h1 class="scanline-text" data-text="INTELLIBIN">INTELLIBIN </h1>
+        <div class="hero-title-line"></div>
+        <p class="hero-subtitle">Smart waste detection system that prevents chemical accidents before they happen.</p>
+
+        <div class="hero-stats">
+          <span class="stat-item"><span class="indicator active"></span> Real-time Monitoring</span>
+          <span class="stat-item"><span class="indicator active"></span> AI-Powered Detection</span>
+          <span class="stat-item"><span class="indicator active"></span> Instant Alerts</span>
+        </div>
+
+        <div class="hero-buttons">
+          <a href="#tech" class="cta-button">Découvrir le système</a>
+          <button class="cta-button-outline" onclick="showToast('DEMO_MODE_RESTRICTED')">Voir la démo</button>
+        </div>
+      </div>
+
+      <!-- Floating Glass Cards -->
+      <div class="floating-cards">
+        <!-- Top Right Card - Key Metric -->
+        <div class="glass-card card-top-right">
+          <div class="card-spotlight"></div>
+          <div class="card-icon">⚗️</div>
+          <div class="card-metric">500+</div>
+          <div class="card-label">Chemicals Detected</div>
+        </div>
+
+        <!-- Middle Right Card - Response Time -->
+        <div class="glass-card card-mid-right">
+          <div class="card-spotlight"></div>
+          <div class="card-icon">⚡</div>
+          <div class="card-metric">&lt;50ms</div>
+          <div class="card-label">Response Time</div>
+        </div>
+
+        <!-- Bottom Left Card - Safety Score -->
+        <div class="glass-card card-bottom-left">
+          <div class="card-spotlight"></div>
+          <div class="card-row">
+            <span class="safety-label">Safety Index</span>
+            <span class="safety-score">98.7%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- Floating Tags -->
+        <div class="floating-tag tag-1">VOC Detection</div>
+        <div class="floating-tag tag-2">pH Monitoring</div>
+        <div class="floating-tag tag-3">Thermal Sensors</div>
+      </div>
+    </section>
+
+    <!-- Feature Section (Scroll Target) -->
+    <section class="feature-section" id="tech">
+      <div class="feature-content-left">
+        <div class="services-header">
+          <div class="services-tag">[ GLOBAL THREAT ]</div>
+          <h2 class="services-title">THE PROBLEM</h2>
+          <p class="services-subtitle">Chemical accidents remain a daily risk in research and industrial environments.
+          </p>
+        </div>
+        <p class="hero-subtitle">
+          Alarming Statistics:
+          <!-- Replace your existing hero-stats div with this: -->
+        <div class="hero-stats-glass">
+          <div class="stat-glass-card">
+            <span class="stat-indicator"></span>
+            <span class="stat-glass-number">5,000+</span>
+            <span class="stat-glass-text">chemical incidents annually in laboratories</span>
+          </div>
+          <div class="stat-glass-card">
+            <span class="stat-indicator"></span>
+            <span class="stat-glass-number">1 in 3</span>
+            <span class="stat-glass-text">accidents caused by hazardous waste mixtures</span>
+          </div>
+          <div class="stat-glass-card">
+            <span class="stat-indicator"></span>
+            <span class="stat-glass-number">60%</span>
+            <span class="stat-glass-text">of lab fires result from uncontrolled chemical reactions</span>
+          </div>
+        </div>
+        </p>
+      </div>
+    </section>
+
+
+    <!-- High Costs Section (Reimagined HUD Style) -->
+    <section class="services-section">
+      <div class="services-container">
+        <div class="services-header">
+          <div class="services-tag">[ RISK ANALYSIS ]</div>
+          <h2 class="services-title">High Costs</h2>
+          <p class="services-subtitle">Financial and operational impact of chemical incidents</p>
+        </div>
+
+        <div class="services-grid">
+          <!-- Card 01 -->
+          <div class="hud-card">
+            <div class="card-spotlight"></div>
+            <div class="hud-card-header">
+              <span class="hud-index">[ 01 ]</span>
+              <span class="hud-tag">FINANCIAL EXPOSURE</span>
+            </div>
+            <div class="hud-card-main">
+              <div class="hud-value">$500,000</div>
+              <div class="hud-detail">
+                <p>Average cost per major laboratory incident including specialized cleanup and regulatory remediation.
+                </p>
+                <div class="hud-bar-container">
+                  <div class="hud-bar-fill" style="width: 85%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 02 -->
+          <div class="hud-card">
+            <div class="card-spotlight"></div>
+            <div class="hud-card-header">
+              <span class="hud-index">[ 02 ]</span>
+              <span class="hud-tag">OPERATIONAL IMPACT</span>
+            </div>
+            <div class="hud-card-main">
+              <div class="hud-value">45 DAYS</div>
+              <div class="hud-detail">
+                <p>Average facility downtime following an unmonitored reaction. Lost potential and legal liability.</p>
+                <div class="hud-bar-container">
+                  <div class="hud-bar-fill" style="width: 65%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 03 -->
+          <div class="hud-card">
+            <div class="card-spotlight"></div>
+            <div class="hud-card-header">
+              <span class="hud-index">[ 03 ]</span>
+              <span class="hud-tag">STRATEGIC RISK</span>
+            </div>
+            <div class="hud-card-main">
+              <div class="hud-value">CRITICAL</div>
+              <div class="hud-detail">
+                <p>Reputational damage and loss of research momentum. Irreversible trust degradation with partners.</p>
+                <div class="hud-bar-container">
+                  <div class="hud-bar-fill" style="width: 95%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- The Solution Section (Center Empty) -->
+    <section class="solution-section" id="security">
+      <div class="solution-container">
+        <div class="solution-header">
+          <div class="services-tag">[ SYSTEM ARCHITECTURE ]</div>
+          <h2 class="services-title">THE SOLUTION</h2>
+        </div>
+
+        <div class="solution-grid">
+          <!-- Left Column -->
+          <div class="solution-column left">
+            <div class="hud-card">
+              <div class="card-spotlight"></div>
+              <div class="hud-card-header">
+                <span class="hud-index">[ 04 ]</span>
+                <span class="hud-tag">AI ANALYSIS</span>
+              </div>
+              <div class="hud-card-main">
+                <div class="hud-value">99.8%</div>
+                <div class="hud-detail">
+                  <p>Neural network trained on 1M+ chemical signatures for predictive threat detection.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="hud-card">
+              <div class="card-spotlight"></div>
+              <div class="hud-card-header">
+                <span class="hud-index">[ 05 ]</span>
+                <span class="hud-tag">AUTO-SEAL</span>
+              </div>
+              <div class="hud-card-main">
+                <div class="hud-value">&lt; 1.2s</div>
+                <div class="hud-detail">
+                  <p>Instant mechanical isolation triggered by pH or VOC anomalies. Total hermetic containment.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty Center Space (Reserved for 3D Bin) -->
+          <div class="solution-center-space"></div>
+
+          <!-- Right Column -->
+          <div class="solution-column right">
+            <div class="hud-card">
+              <div class="card-spotlight"></div>
+              <div class="hud-card-header">
+                <span class="hud-index">[ 06 ]</span>
+                <span class="hud-tag">CLOUD MONITOR</span>
+              </div>
+              <div class="hud-card-main">
+                <div class="hud-value">LIVE</div>
+                <div class="hud-detail">
+                  <p>Real-time telemetry and alerts sent directly to facility management dashboards.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="hud-card">
+              <div class="card-spotlight"></div>
+              <div class="hud-card-header">
+                <span class="hud-index">[ 07 ]</span>
+                <span class="hud-tag">MULTI-SENSOR</span>
+              </div>
+              <div class="hud-card-main">
+                <div class="hud-value">128 SENSORS</div>
+                <div class="hud-detail">
+                  <p>High-precision array monitoring VOCs, temperature, pH, and pressure 24/7/365.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section (Cyberspace Design) -->
+    <section class="how-section" id="how-it-works">
+      <div class="how-container">
+        <div class="how-header">
+          <div class="services-tag">[ OPERATION PROTOCOL ]</div>
+          <h2 class="services-title">HOW IT WORKS</h2>
+          <p class="services-subtitle">A high-precision 3-step system for total chemical security.</p>
+        </div>
+
+        <div class="how-grid">
+          <!-- Step 1 -->
+          <div class="how-card">
+            <div class="how-card-inner">
+              <div class="how-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </div>
+              <div class="how-content">
+                <div class="how-index">[ 01 ]</div>
+                <h3 class="how-card-title">Saisie des données</h3>
+                <p>L'utilisateur fournit la nature, la quantité et la concentration du produit.</p>
+              </div>
+              <div class="how-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="how-card active">
+            <div class="how-card-inner">
+              <div class="how-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  <path d="M12 22V12" />
+                  <path d="M12 12l8.73-5" />
+                  <path d="M12 12L3.27 7" />
+                </svg>
+              </div>
+              <div class="how-content">
+                <div class="how-index">[ 02 ]</div>
+                <h3 class="how-card-title">Analyse & Vérification</h3>
+                <p>Vérification instantanée de compatibilité et de capacité via IA neurale.</p>
+              </div>
+              <div class="how-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="how-card">
+            <div class="how-card-inner">
+              <div class="how-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </div>
+              <div class="how-content">
+                <div class="how-index">[ 03 ]</div>
+                <h3 class="how-card-title">Instructions & Guidage</h3>
+                <p>Guidage vers le conteneur spécifique et localisation précise dans le labo.</p>
+              </div>
+              <div class="how-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- The Monolith (Order Now Redesign) -->
+    <section class="monolith-section" id="monolith">
+      <!-- Decorative Crosshairs -->
+      <div class="crosshair tl">+</div>
+      <div class="crosshair tr">+</div>
+      <div class="crosshair bl">+</div>
+      <div class="crosshair br">+</div>
+
+      <div class="monolith-wrapper">
+        <div class="monolith-card">
+          <div class="monolith-glow"></div>
+
+          <div class="monolith-header">
+            <div class="monolith-serial">
+              <span class="label">UNIT:</span>
+              <span class="value">INTELLIBIN_V1.0</span>
+            </div>
+            <div class="monolith-status">
+              <span class="status-dot-green"></span>
+              <span class="value">SYSTEMS_ACTIVE</span>
+            </div>
+          </div>
+
+          <div class="monolith-body">
+            <h2 class="monolith-title">INITIATE<br>RESERVE</h2>
+            <p class="monolith-desc">Deploy the ultimate safety protocol to your laboratory. Batch one production is now
+              open for authorized facilities.</p>
+
+            <div class="monolith-cta">
+              <button class="reserve-btn">
+                <span class="btn-glitch-effect">SECURE_UNIT_NOW</span>
+                <div class="btn-flare"></div>
+              </button>
+            </div>
+          </div>
+
+          <div class="monolith-footer">
+            <div class="availability-bar">
+              <div class="availability-label">STOCK_LEVEL</div>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: 82%;"></div>
+              </div>
+              <div class="availability-percent">82%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="clinical-footer">
+    <div class="footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">SAFEBIN<span class="logo-dot"></span></div>
+        <p class="footer-mission">Neural-enhanced chemical containment systems for hazardous research environments.</p>
+      </div>
+
+      <div class="footer-col">
+        <div class="footer-header">[ TECHNOLOGY ]</div>
+        <ul class="footer-links">
+          <li><a href="#tech">Neural Scanning</a></li>
+          <li><a href="#how-it-works">Sensor Matrix</a></li>
+          <li><a href="#security">Isolation Logic</a></li>
+          <li><a href="#security">Vapor Containment</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <div class="footer-header">[ RESOURCES ]</div>
+        <ul class="footer-links">
+          <li><a href="#monolith">Compliance Docs</a></li>
+          <li><a href="#tech">API Reference</a></li>
+          <li><a href="#how-it-works">Facility Setup</a></li>
+          <li><a href="#monolith">Global Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <div class="footer-header">[ CONNECT ]</div>
+        <ul class="footer-links">
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">X / Twitter</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Contact Unit</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="bottom-meta">
+        <span>© 2026 SAFEBIN TECHNOLOGIES. ALL RIGHTS RESERVED.</span>
+        <span class="meta-sep"> / </span>
+        <span>BUILD: v1.0.4-STABLE</span>
+        <span class="meta-sep"> / </span>
+        <span class="utc-clock">UTC 17:18:42</span>
+      </div>
+      <div class="footer-signoff">INTELLIBIN</div>
+    </div>
+  </footer>
+
+  <!-- Scanlines SVG Filter -->
+  <svg style="display: none;">
+    <defs>
+      <filter id="scanlines">
+        <feFlood flood-color="#000" flood-opacity="0.3" result="black" />
+        <feFlood flood-color="#fff" flood-opacity="0.1" result="white" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Laboratory Reservation Modal -->
+  <div class="modal-overlay" id="reservation-modal">
+    <div class="modal-content">
+      <div class="modal-close" id="close-modal">+</div>
+
+      <div class="modal-header">
+        <div class="modal-badge">[ PROTOCOL_INITIATED ]</div>
+        <h2 class="modal-title">RESERVE UNIT_V1</h2>
+      </div>
+
+      <div class="modal-body" id="modal-step-1">
+        <div class="simulation-box">
+          <div class="sim-line">SCANNING FACILITY... [ OK ]</div>
+          <div class="sim-line">AUTH KEYGEN... [ PENDING ]</div>
+          <div class="sim-line">DECRYPTING PROTOCOL... [ READY ]</div>
+        </div>
+        <button class="modal-next-btn" id="to-step-2">PROCEED TO AUTHORIZATION</button>
+      </div>
+
+      <div class="modal-body hidden" id="modal-step-2">
+        <form class="reservation-form">
+          <div class="form-group">
+            <label>[ FACILITY_ID ]</label>
+            <input type="text" placeholder="LAB_NAME_OR_CODE" required>
+          </div>
+          <div class="form-group">
+            <label>[ SECURE_COMMS ]</label>
+            <input type="email" placeholder="ADMIN@LAB.GLOBAL" required>
+          </div>
+          <div class="form-group">
+            <label>[ CAPACITY_INDEX ]</label>
+            <select>
+              <option value="single">SINGLE_UNIT (LITE)</option>
+              <option value="array">ARRAY_NODE (5+ UNITS)</option>
+              <option value="full">ENTERPRISE_MAINFRAME</option>
+            </select>
+          </div>
+          <button type="submit" class="modal-submit-btn">AUTHORIZE RESERVATION</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+
+</html>
