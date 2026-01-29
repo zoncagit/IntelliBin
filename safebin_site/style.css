@@ -90,6 +90,8 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: 0;
+  will-change: transform;
+  /* Hint to the browser for GPU optimization */
 }
 
 /* UI Overlay */
@@ -1885,15 +1887,27 @@ main {
   animation: simLineFade 0.5s forwards;
 }
 
-.sim-line:nth-child(1) { animation-delay: 0.2s; }
-.sim-line:nth-child(2) { animation-delay: 0.6s; }
-.sim-line:nth-child(3) { animation-delay: 1s; }
-
-@keyframes simLineFade {
-  to { opacity: 1; transform: translateX(5px); }
+.sim-line:nth-child(1) {
+  animation-delay: 0.2s;
 }
 
-.modal-next-btn, .modal-submit-btn {
+.sim-line:nth-child(2) {
+  animation-delay: 0.6s;
+}
+
+.sim-line:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes simLineFade {
+  to {
+    opacity: 1;
+    transform: translateX(5px);
+  }
+}
+
+.modal-next-btn,
+.modal-submit-btn {
   width: 100%;
   background: #fff;
   color: #000;
@@ -1907,12 +1921,15 @@ main {
   transition: all 0.3s ease;
 }
 
-.modal-next-btn:hover, .modal-submit-btn:hover {
+.modal-next-btn:hover,
+.modal-submit-btn:hover {
   background: var(--accent-orange);
   color: #fff;
 }
 
-.hidden { display: none; }
+.hidden {
+  display: none;
+}
 
 /* Form Styling */
 .reservation-form {
@@ -1934,7 +1951,8 @@ main {
   letter-spacing: 1px;
 }
 
-.form-group input, .form-group select {
+.form-group input,
+.form-group select {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 1rem;
@@ -1949,4 +1967,3 @@ main {
 }
 
 /* ========== END MODAL ========== */
-

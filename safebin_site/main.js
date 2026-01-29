@@ -17,10 +17,12 @@ camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
-    alpha: true
+    alpha: true,
+    powerPreference: "high-performance",
+    precision: "mediump"
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Capped at 1.5 for performance
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
@@ -189,7 +191,7 @@ function initScrollAnimations() {
             start: "top top",
             endTrigger: ".solution-section", // FIX: Lock end to the Solution section
             end: "bottom bottom",
-            scrub: 2,
+            scrub: 1, // Reduced for better responsiveness
         }
     });
 
@@ -405,11 +407,17 @@ function initClock() {
 }
 
 // --- RENDER LOOP ---
-function animate() {
-    requestAnimationFrame(animate);
+// Use GSAP Ticker for smoother frame synchronization
+gsap.ticker.add(() => {
     renderer.render(scene, camera);
-}
-animate();
+});
+
+// Remove manual animate loop
+// function animate() {
+//     requestAnimationFrame(animate);
+//     renderer.render(scene, camera);
+// }
+// animate();
 
 // --- INITIALIZE ALL ---
 initCardEffects();
