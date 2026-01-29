@@ -1,0 +1,17 @@
+# IntelliBin Backend Dependencies
+# Python 3.11+ required
+
+# Core Framework
+fastapi>=0.109.0
+uvicorn>=0.27.0
+pydantic>=2.5.0
+
+# Environment
+python-dotenv>=1.0.0
+
+# UI Simulator
+customtkinter>=5.2.0
+
+# Testing (optional)
+pytest>=7.4.0
+httpx>=0.26.0

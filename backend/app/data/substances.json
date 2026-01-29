@@ -1,0 +1,385 @@
+{
+  "substances": [
+    {
+      "id": "hcl-dilute",
+      "name": "Hydrochloric Acid (dilute)",
+      "aliases": ["HCl dilute", "Dilute HCl", "10% HCl", "Dilute Hydrochloric"],
+      "category": "Acid",
+      "default_waste_stream": "AqueousAcid",
+      "properties": {
+        "ph_range": [2, 4],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Metal", "Base", "Oxidizer", "Water-Reactive"]
+    },
+    {
+      "id": "hcl-conc",
+      "name": "Hydrochloric Acid (concentrated)",
+      "aliases": ["HCl", "Conc HCl", "37% HCl", "Muriatic Acid", "Concentrated HCl"],
+      "category": "Acid",
+      "default_waste_stream": "Corrosive",
+      "properties": {
+        "ph_range": [0, 1],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "High"
+      },
+      "incompatible_with": ["Metal", "Base", "Oxidizer", "Water-Reactive"]
+    },
+    {
+      "id": "sulfuric-dilute",
+      "name": "Sulfuric Acid (dilute)",
+      "aliases": ["H2SO4 dilute", "Dilute Sulfuric", "10% Sulfuric", "Dilute H2SO4"],
+      "category": "Acid",
+      "default_waste_stream": "AqueousAcid",
+      "properties": {
+        "ph_range": [1, 3],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Metal", "Base", "Oxidizer", "Water-Reactive"]
+    },
+    {
+      "id": "nitric-acid",
+      "name": "Nitric Acid",
+      "aliases": ["HNO3", "Nitric"],
+      "category": "Acid",
+      "default_waste_stream": "AqueousAcid",
+      "properties": {
+        "ph_range": [1, 2],
+        "flammable": false,
+        "oxidizer": true,
+        "water_reactive": false,
+        "toxicity": "High"
+      },
+      "incompatible_with": ["Metal", "Base", "Organic", "Solvent"]
+    },
+    {
+      "id": "naoh",
+      "name": "Sodium Hydroxide",
+      "aliases": ["NaOH", "Caustic Soda", "Lye", "Sodium Hydroxide Solution"],
+      "category": "Base",
+      "default_waste_stream": "AqueousBase",
+      "properties": {
+        "ph_range": [12, 14],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Acid", "Metal"]
+    },
+    {
+      "id": "koh",
+      "name": "Potassium Hydroxide",
+      "aliases": ["KOH", "Caustic Potash"],
+      "category": "Base",
+      "default_waste_stream": "AqueousBase",
+      "properties": {
+        "ph_range": [12, 14],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Acid", "Metal"]
+    },
+    {
+      "id": "ammonia",
+      "name": "Ammonia Solution",
+      "aliases": ["NH3", "Ammonium Hydroxide", "NH4OH"],
+      "category": "Base",
+      "default_waste_stream": "AqueousBase",
+      "properties": {
+        "ph_range": [11, 12],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Acid", "Halogen"]
+    },
+    {
+      "id": "sodium-metal",
+      "name": "Sodium Metal",
+      "aliases": ["Na", "Sodium", "Metallic Sodium", "Sodium Metal Pieces"],
+      "category": "Metal",
+      "default_waste_stream": "ReactiveMetal",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": true,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Acid", "Base", "Water-Reactive", "Halogen"]
+    },
+    {
+      "id": "potassium-metal",
+      "name": "Potassium Metal",
+      "aliases": ["K", "Potassium", "Metallic Potassium"],
+      "category": "Metal",
+      "default_waste_stream": "ReactiveMetal",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": true,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Acid", "Base", "Water-Reactive", "Halogen"]
+    },
+    {
+      "id": "lithium-metal",
+      "name": "Lithium Metal",
+      "aliases": ["Li", "Lithium", "Metallic Lithium"],
+      "category": "Metal",
+      "default_waste_stream": "ReactiveMetal",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": true,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Acid", "Base", "Water-Reactive", "Halogen"]
+    },
+    {
+      "id": "acetone",
+      "name": "Acetone",
+      "aliases": ["Propanone", "Dimethyl Ketone", "2-Propanone"],
+      "category": "Solvent",
+      "default_waste_stream": "NonHalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Low",
+        "flash_point_c": -20
+      },
+      "incompatible_with": ["Oxidizer"]
+    },
+    {
+      "id": "ethanol",
+      "name": "Ethanol",
+      "aliases": ["Ethyl Alcohol", "EtOH", "Alcohol", "95% Ethanol"],
+      "category": "Solvent",
+      "default_waste_stream": "NonHalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Low",
+        "flash_point_c": 13
+      },
+      "incompatible_with": ["Oxidizer"]
+    },
+    {
+      "id": "methanol",
+      "name": "Methanol",
+      "aliases": ["Methyl Alcohol", "MeOH", "Wood Alcohol"],
+      "category": "Solvent",
+      "default_waste_stream": "NonHalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "High",
+        "flash_point_c": 11
+      },
+      "incompatible_with": ["Oxidizer"]
+    },
+    {
+      "id": "isopropanol",
+      "name": "Isopropanol",
+      "aliases": ["IPA", "Isopropyl Alcohol", "2-Propanol", "Rubbing Alcohol"],
+      "category": "Solvent",
+      "default_waste_stream": "NonHalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Low",
+        "flash_point_c": 12
+      },
+      "incompatible_with": ["Oxidizer"]
+    },
+    {
+      "id": "hexane",
+      "name": "Hexane",
+      "aliases": ["n-Hexane", "Hexanes"],
+      "category": "Solvent",
+      "default_waste_stream": "NonHalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Medium",
+        "flash_point_c": -22
+      },
+      "incompatible_with": ["Oxidizer"]
+    },
+    {
+      "id": "toluene",
+      "name": "Toluene",
+      "aliases": ["Methylbenzene", "Toluol"],
+      "category": "Solvent",
+      "default_waste_stream": "NonHalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": true,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Medium",
+        "flash_point_c": 4
+      },
+      "incompatible_with": ["Oxidizer"]
+    },
+    {
+      "id": "chloroform",
+      "name": "Chloroform",
+      "aliases": ["CHCl3", "Trichloromethane"],
+      "category": "Solvent",
+      "default_waste_stream": "HalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "High"
+      },
+      "incompatible_with": ["Oxidizer", "Metal"]
+    },
+    {
+      "id": "dcm",
+      "name": "Dichloromethane",
+      "aliases": ["DCM", "Methylene Chloride", "CH2Cl2"],
+      "category": "Solvent",
+      "default_waste_stream": "HalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Oxidizer", "Metal"]
+    },
+    {
+      "id": "carbon-tet",
+      "name": "Carbon Tetrachloride",
+      "aliases": ["CCl4", "Tetrachloromethane"],
+      "category": "Solvent",
+      "default_waste_stream": "HalogenatedSolvent",
+      "properties": {
+        "ph_range": [7, 7],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "High"
+      },
+      "incompatible_with": ["Oxidizer", "Metal"]
+    },
+    {
+      "id": "h2o2-30",
+      "name": "Hydrogen Peroxide (30%)",
+      "aliases": ["H2O2", "Peroxide", "30% Peroxide", "Hydrogen Peroxide"],
+      "category": "Oxidizer",
+      "default_waste_stream": "Oxidizer",
+      "properties": {
+        "ph_range": [4, 5],
+        "flammable": false,
+        "oxidizer": true,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Organic", "Solvent", "Metal"]
+    },
+    {
+      "id": "kmno4",
+      "name": "Potassium Permanganate",
+      "aliases": ["KMnO4", "Permanganate"],
+      "category": "Oxidizer",
+      "default_waste_stream": "Oxidizer",
+      "properties": {
+        "ph_range": [7, 8],
+        "flammable": false,
+        "oxidizer": true,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Organic", "Solvent", "Metal"]
+    },
+    {
+      "id": "sodium-hypochlorite",
+      "name": "Sodium Hypochlorite",
+      "aliases": ["Bleach", "NaOCl", "Chlorine Bleach"],
+      "category": "Oxidizer",
+      "default_waste_stream": "Oxidizer",
+      "properties": {
+        "ph_range": [11, 13],
+        "flammable": false,
+        "oxidizer": true,
+        "water_reactive": false,
+        "toxicity": "Medium"
+      },
+      "incompatible_with": ["Acid", "Organic", "Solvent"]
+    },
+    {
+      "id": "mercury-solution",
+      "name": "Mercury Solution",
+      "aliases": ["Hg", "Mercury", "Mercuric", "Mercury Chloride"],
+      "category": "Heavy-Metal",
+      "default_waste_stream": "HeavyMetal",
+      "properties": {
+        "ph_range": [5, 7],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "High"
+      },
+      "incompatible_with": []
+    },
+    {
+      "id": "lead-solution",
+      "name": "Lead Solution",
+      "aliases": ["Pb", "Lead", "Lead Nitrate Solution", "Lead Acetate"],
+      "category": "Heavy-Metal",
+      "default_waste_stream": "HeavyMetal",
+      "properties": {
+        "ph_range": [5, 7],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "High"
+      },
+      "incompatible_with": []
+    },
+    {
+      "id": "cadmium-solution",
+      "name": "Cadmium Solution",
+      "aliases": ["Cd", "Cadmium", "Cadmium Chloride"],
+      "category": "Heavy-Metal",
+      "default_waste_stream": "HeavyMetal",
+      "properties": {
+        "ph_range": [5, 7],
+        "flammable": false,
+        "oxidizer": false,
+        "water_reactive": false,
+        "toxicity": "High"
+      },
+      "incompatible_with": []
+    }
+  ]
+}
