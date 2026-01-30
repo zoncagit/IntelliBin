@@ -1,275 +1,283 @@
 """
-IntelliBin Simulator - Clean Desktop UI
-A modern interface for the waste routing simulation.
+IntelliBin Simulator - Waste Disposal UI
+Separates dangerous and non-dangerous disposables.
 """
 
 import customtkinter as ctk
 from typing import Optional
 import sys
 from pathlib import Path
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from app.services import state_manager, routing_service, classification_service
-from app.models.responses import RouteRequest, RiskLevel
-
+import tkinter as tk
+from datetime import datetime
+from PIL import Image
 
 # ============================================
-# THEME CONFIGURATION
+# DESIGN SYSTEM - TACTICAL HUD THEME
 # ============================================
 
 COLORS = {
-    "bg_primary": "#F5F5F7",
-    "bg_secondary": "#FFFFFF",
-    "bg_tertiary": "#E8E8ED",
-    "text_primary": "#1D1D1F",
-    "text_secondary": "#86868B",
-    "text_tertiary": "#6E6E73",
-    "accent_blue": "#007AFF",
-    "accent_green": "#34C759",
-    "accent_yellow": "#FF9500",
-    "accent_red": "#FF3B30",
-    "border": "#D2D2D7",
+    # Primary Accent - Ambre / Tactical Orange
+    "accent_primary": "#DB835C",
+    "accent_hover": "#E59A78",
+    
+    # Backgrounds - Dark Mode
+    "bg_pure": "#050505",
+    "bg_card": "#1A1A1A",
+    "bg_elevated": "#252525",
+    
+    # Text
+    "text_main": "#FFFFFF",
+    "text_secondary": "#989796",
+    "text_muted": "#6E6E6E",
+    
+    # Status Colors
+    "alert_error": "#FF3B30",
+    "status_success": "#34C759",
+    "status_warning": "#FF9500",
+    "danger": "#E53935",
+    "safe": "#43A047",
+    
+    # Borders
+    "border_glass": "#3D2E24",
+    "border_subtle": "#2A2A2A",
 }
+
+# All fonts use JetBrains Mono (falls back to Menlo on macOS)
+_FONT = "JetBrains Mono"
 
 FONTS = {
-    "logo": ("JetBrains Mono", 32, "bold"),
-    "heading": ("JetBrains Mono", 20, "bold"),
-    "subheading": ("JetBrains Mono", 16, "bold"),
-    "body": ("JetBrains Mono", 14),
-    "body_bold": ("JetBrains Mono", 14, "bold"),
-    "small": ("JetBrains Mono", 12),
-    "tiny": ("JetBrains Mono", 10),
-    "mono": ("monospace", 12),
+    "logo": (_FONT, 28, "bold"),
+    "heading": (_FONT, 18, "bold"),
+    "subheading": (_FONT, 14, "bold"),
+    "body": (_FONT, 12),
+    "body_bold": (_FONT, 12, "bold"),
+    "small": (_FONT, 11),
+    "tiny": (_FONT, 9),
+    "button": (_FONT, 11, "bold"),
 }
 
-# Predefined substances list
-SUBSTANCES_LIST = [
-    "Hydrochloric Acid (dilute)",
-    "Hydrochloric Acid (concentrated)",
-    "Sulfuric Acid (dilute)",
-    "Nitric Acid",
-    "Sodium Hydroxide",
-    "Potassium Hydroxide",
-    "Ammonia Solution",
-    "Sodium Metal",
-    "Potassium Metal",
-    "Lithium Metal",
-    "Acetone",
-    "Ethanol",
-    "Methanol",
-    "Isopropanol",
-    "Hexane",
-    "Toluene",
-    "Chloroform",
-    "Dichloromethane",
-    "Carbon Tetrachloride",
-    "Hydrogen Peroxide (30%)",
-    "Potassium Permanganate",
-    "Sodium Hypochlorite",
-    "Mercury Solution",
-    "Lead Solution",
-    "Cadmium Solution",
+# ============================================
+# DISPOSABLES DATA
+# ============================================
+
+DISPOSABLES = [
+    # Non-dangerous items
+    {"name": "Paper", "dangerous": False, "category": "recyclable"},
+    {"name": "Cardboard", "dangerous": False, "category": "recyclable"},
+    {"name": "Plastic Bottle", "dangerous": False, "category": "recyclable"},
+    {"name": "Plastic Bag", "dangerous": False, "category": "recyclable"},
+    {"name": "Food Wrapper", "dangerous": False, "category": "general"},
+    {"name": "Tissue Paper", "dangerous": False, "category": "general"},
+    {"name": "Newspaper", "dangerous": False, "category": "recyclable"},
+    {"name": "Magazine", "dangerous": False, "category": "recyclable"},
+    
+    # Dangerous items
+    {"name": "Glass Bottle", "dangerous": True, "category": "glass"},
+    {"name": "Broken Glass", "dangerous": True, "category": "glass"},
+    {"name": "Glass Jar", "dangerous": True, "category": "glass"},
+    {"name": "Petri Dish (used)", "dangerous": True, "category": "microbio"},
+    {"name": "Culture Tube", "dangerous": True, "category": "microbio"},
+    {"name": "Biohazard Waste", "dangerous": True, "category": "microbio"},
+    {"name": "Contaminated Swab", "dangerous": True, "category": "microbio"},
+    {"name": "Aluminium Can", "dangerous": True, "category": "aluminium"},
+    {"name": "Aluminium Foil", "dangerous": True, "category": "aluminium"},
+    {"name": "Metal Scrap", "dangerous": True, "category": "metals"},
+    {"name": "Steel Can", "dangerous": True, "category": "metals"},
+    {"name": "Metal Wire", "dangerous": True, "category": "metals"},
+    {"name": "Copper Wire", "dangerous": True, "category": "metals"},
+    {"name": "Syringe (used)", "dangerous": True, "category": "sharps"},
+    {"name": "Scalpel Blade", "dangerous": True, "category": "sharps"},
 ]
 
-QUANTITY_OPTIONS = ["50", "100", "150", "200", "250", "300", "400", "500"]
+# Container definitions
+CONTAINERS = {
+    "NON-DANGEROUS": {
+        "id": "GENERAL-01",
+        "name": "General Waste",
+        "accepts": ["recyclable", "general"],
+        "dangerous": False,
+        "capacity": 1000,
+        "current_fill": 0,
+        "color": COLORS["safe"],
+    },
+    "GLASS": {
+        "id": "GLASS-01",
+        "name": "Glass Container",
+        "accepts": ["glass"],
+        "dangerous": True,
+        "capacity": 500,
+        "current_fill": 0,
+        "color": "#2196F3",
+    },
+    "MICROBIO": {
+        "id": "BIO-01",
+        "name": "Biohazard",
+        "accepts": ["microbio"],
+        "dangerous": True,
+        "capacity": 300,
+        "current_fill": 0,
+        "color": "#FF9800",
+    },
+    "ALUMINIUM": {
+        "id": "ALU-01",
+        "name": "Aluminium",
+        "accepts": ["aluminium"],
+        "dangerous": True,
+        "capacity": 400,
+        "current_fill": 0,
+        "color": "#9E9E9E",
+    },
+    "METALS": {
+        "id": "METAL-01",
+        "name": "Metals",
+        "accepts": ["metals"],
+        "dangerous": True,
+        "capacity": 500,
+        "current_fill": 0,
+        "color": "#607D8B",
+    },
+    "SHARPS": {
+        "id": "SHARP-01",
+        "name": "Sharps",
+        "accepts": ["sharps"],
+        "dangerous": True,
+        "capacity": 200,
+        "current_fill": 0,
+        "color": "#E91E63",
+    },
+}
 
 
 # ============================================
 # CUSTOM WIDGETS
 # ============================================
 
-class Card(ctk.CTkFrame):
-    """A card-style container"""
+class GlassCard(ctk.CTkFrame):
+    """A card with glass effect"""
     
-    def __init__(self, master, fg_color=None, **kwargs):
-        color = fg_color if fg_color is not None else COLORS["bg_secondary"]
+    def __init__(self, master, highlight=False, **kwargs):
+        border_color = COLORS["accent_primary"] if highlight else COLORS["border_glass"]
         super().__init__(
             master,
-            fg_color=color,
+            fg_color=COLORS["bg_card"],
             corner_radius=12,
             border_width=1,
-            border_color=COLORS["border"],
+            border_color=border_color,
             **kwargs
         )
 
 
-class ContainerCard(Card):
-    """A card displaying container status"""
+class StatusDot(ctk.CTkFrame):
+    """Status indicator dot"""
     
-    def __init__(self, master, container: dict, **kwargs):
-        super().__init__(master, **kwargs)
-        self.container = container
+    def __init__(self, master, status="active", size=8, **kwargs):
+        super().__init__(master, fg_color="transparent", **kwargs)
+        
+        colors = {
+            "active": COLORS["accent_primary"],
+            "warning": COLORS["status_warning"],
+            "error": COLORS["alert_error"],
+            "success": COLORS["status_success"],
+            "danger": COLORS["danger"],
+            "safe": COLORS["safe"],
+        }
+        
+        self.dot = ctk.CTkLabel(
+            self,
+            text="●",
+            font=("Arial", size),
+            text_color=colors.get(status, COLORS["accent_primary"])
+        )
+        self.dot.pack()
+
+
+class SignatureLine(ctk.CTkFrame):
+    """Ambre accent line"""
+    
+    def __init__(self, master, width=100, **kwargs):
+        super().__init__(
+            master,
+            fg_color=COLORS["accent_primary"],
+            height=2,
+            corner_radius=1,
+            **kwargs
+        )
+        if width:
+            self.configure(width=width)
+
+
+class CompactContainerCard(ctk.CTkFrame):
+    """Compact container card"""
+    
+    def __init__(self, master, container_data: dict, **kwargs):
+        is_danger = container_data.get("dangerous", False)
+        border_color = COLORS["danger"] if is_danger else COLORS["safe"]
+        
+        super().__init__(
+            master,
+            fg_color=COLORS["bg_elevated"],
+            corner_radius=8,
+            border_width=2,
+            border_color=border_color,
+            **kwargs
+        )
+        
+        self.data = container_data
         self._create_widgets()
     
     def _create_widgets(self):
+        # Header row
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.pack(fill="x", padx=8, pady=(8, 4))
+        
+        # Status dot
+        status = "danger" if self.data["dangerous"] else "safe"
+        dot = StatusDot(header, status=status, size=8)
+        dot.pack(side="left", padx=(0, 6))
+        
         # Container ID
-        id_label = ctk.CTkLabel(
-            self,
-            text=self.container["container_id"],
-            font=FONTS["subheading"],
-            text_color=COLORS["text_primary"],
-            anchor="w"
-        )
-        id_label.pack(fill="x", padx=16, pady=(16, 4))
+        ctk.CTkLabel(
+            header,
+            text=self.data["id"],
+            font=FONTS["tiny"],
+            text_color=self.data["color"]
+        ).pack(side="left")
         
-        # Waste stream
-        stream_label = ctk.CTkLabel(
+        # Name
+        ctk.CTkLabel(
             self,
-            text=self.container["waste_stream"],
+            text=self.data["name"].upper(),
             font=FONTS["small"],
-            text_color=COLORS["text_secondary"],
-            anchor="w"
-        )
-        stream_label.pack(fill="x", padx=16, pady=(0, 8))
+            text_color=COLORS["text_main"]
+        ).pack(anchor="w", padx=8)
         
-        # Fill level progress bar
-        fill_percent = (self.container["current_fill_ml"] / self.container["capacity_ml"]) * 100
+        # Progress bar
+        fill_pct = (self.data["current_fill"] / self.data["capacity"]) * 100
         
-        # Determine color based on fill level
-        if fill_percent >= 90:
-            progress_color = COLORS["accent_red"]
-        elif fill_percent >= 70:
-            progress_color = COLORS["accent_yellow"]
+        if fill_pct >= 90:
+            prog_color = COLORS["alert_error"]
+        elif fill_pct >= 70:
+            prog_color = COLORS["status_warning"]
         else:
-            progress_color = COLORS["accent_green"]
+            prog_color = self.data["color"]
         
-        self.progress = ctk.CTkProgressBar(
+        progress = ctk.CTkProgressBar(
             self,
-            progress_color=progress_color,
-            fg_color=COLORS["bg_tertiary"],
-            height=8,
-            corner_radius=4
+            progress_color=prog_color,
+            fg_color=COLORS["bg_card"],
+            height=4,
+            corner_radius=2
         )
-        self.progress.set(fill_percent / 100)
-        self.progress.pack(fill="x", padx=16, pady=(0, 4))
+        progress.set(fill_pct / 100)
+        progress.pack(fill="x", padx=8, pady=(4, 2))
         
-        # Fill level text
-        fill_text = f"{fill_percent:.0f}% ({self.container['current_fill_ml']:.0f}/{self.container['capacity_ml']:.0f} mL)"
-        fill_label = ctk.CTkLabel(
+        # Fill text
+        ctk.CTkLabel(
             self,
-            text=fill_text,
+            text=f"{fill_pct:.0f}% • {self.data['current_fill']}/{self.data['capacity']}",
             font=FONTS["tiny"],
-            text_color=COLORS["text_tertiary"],
-            anchor="w"
-        )
-        fill_label.pack(fill="x", padx=16, pady=(0, 8))
-        
-        # Location
-        loc_label = ctk.CTkLabel(
-            self,
-            text=self.container['location'],
-            font=FONTS["tiny"],
-            text_color=COLORS["text_tertiary"],
-            anchor="w"
-        )
-        loc_label.pack(fill="x", padx=16, pady=(0, 16))
-    
-    def update_container(self, container: dict):
-        """Update the container display"""
-        self.container = container
-        for widget in self.winfo_children():
-            widget.destroy()
-        self._create_widgets()
-
-
-# ============================================
-# 3D MODEL DISPLAY (Canvas Placeholder)
-# ============================================
-
-class Model3DView(ctk.CTkFrame):
-    """A frame to display 3D model information"""
-    
-    def __init__(self, master, model_path: str = None, **kwargs):
-        super().__init__(master, fg_color=COLORS["bg_tertiary"], corner_radius=12, **kwargs)
-        self.model_path = model_path
-        self._create_widgets()
-    
-    def _create_widgets(self):
-        # Title
-        title = ctk.CTkLabel(
-            self,
-            text="IntelliBin 3D Model",
-            font=FONTS["subheading"],
-            text_color=COLORS["text_primary"]
-        )
-        title.pack(pady=(20, 10))
-        
-        # Canvas for visual representation
-        self.canvas = ctk.CTkCanvas(
-            self,
-            width=200,
-            height=200,
-            bg=COLORS["bg_tertiary"],
-            highlightthickness=0
-        )
-        self.canvas.pack(pady=10)
-        
-        # Draw a stylized bin representation
-        self._draw_bin()
-        
-        # Model info
-        if self.model_path and Path(self.model_path).exists():
-            file_size = Path(self.model_path).stat().st_size / 1024
-            info_text = f"Model: intelligent+bin+3d+model.glb\nSize: {file_size:.1f} KB"
-        else:
-            info_text = "3D Model Preview"
-        
-        info_label = ctk.CTkLabel(
-            self,
-            text=info_text,
-            font=FONTS["tiny"],
-            text_color=COLORS["text_secondary"]
-        )
-        info_label.pack(pady=(5, 20))
-    
-    def _draw_bin(self):
-        """Draw a stylized bin representation"""
-        cx, cy = 100, 100
-        
-        # Bin body (trapezoid)
-        self.canvas.create_polygon(
-            60, 50,    # top left
-            140, 50,   # top right
-            150, 170,  # bottom right
-            50, 170,   # bottom left
-            fill=COLORS["accent_blue"],
-            outline=COLORS["text_primary"],
-            width=2
-        )
-        
-        # Bin lid
-        self.canvas.create_rectangle(
-            55, 40, 145, 55,
-            fill=COLORS["bg_secondary"],
-            outline=COLORS["text_primary"],
-            width=2
-        )
-        
-        # Bin label
-        self.canvas.create_text(
-            cx, 110,
-            text="WASTE",
-            font=("JetBrains Mono", 12, "bold"),
-            fill="white"
-        )
-        
-        # Hazard symbol (simplified)
-        self.canvas.create_polygon(
-            100, 130,
-            85, 155,
-            115, 155,
-            fill=COLORS["accent_yellow"],
-            outline=COLORS["text_primary"],
-            width=1
-        )
-        self.canvas.create_text(
-            100, 145,
-            text="!",
-            font=("JetBrains Mono", 14, "bold"),
-            fill=COLORS["text_primary"]
-        )
+            text_color=COLORS["text_muted"]
+        ).pack(anchor="w", padx=8, pady=(0, 8))
 
 
 # ============================================
@@ -282,527 +290,558 @@ class IntelliBinSimulator(ctk.CTk):
     def __init__(self):
         super().__init__()
         
-        # Window configuration
         self.title("IntelliBin Simulator")
-        self.geometry("1400x850")
-        self.minsize(1200, 700)
+        self.geometry("1200x800")
+        self.minsize(1000, 700)
         
-        # Set appearance
-        ctk.set_appearance_mode("light")
-        ctk.set_default_color_theme("blue")
+        ctk.set_appearance_mode("dark")
+        self.configure(fg_color=COLORS["bg_pure"])
         
-        self.configure(fg_color=COLORS["bg_primary"])
+        # Initialize containers state
+        self.containers = {k: dict(v) for k, v in CONTAINERS.items()}
         
-        # GLB model path
-        self.model_path = Path(__file__).parent.parent.parent / "intelligent+bin+3d+model.glb"
+        # Disposal log
+        self.disposal_log = []
         
         # Create layout
         self._create_layout()
-        
-        # Load initial data
-        self._refresh_containers()
-        self._refresh_log()
-        self._refresh_alerts()
     
     def _create_layout(self):
-        """Create the main application layout"""
-        
+        """Create the main layout"""
         # Header
         self._create_header()
         
-        # Main content area
+        # Main content
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.main_frame.pack(fill="both", expand=True, padx=24, pady=(0, 24))
+        self.main_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
         
-        # Configure grid - 3 columns
+        # Two columns: left (input + model) and right (containers + log)
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_columnconfigure(1, weight=2)
-        self.main_frame.grid_columnconfigure(2, weight=1)
         self.main_frame.grid_rowconfigure(0, weight=1)
         
-        # Create columns
-        self._create_input_column()
-        self._create_containers_column()
-        self._create_info_column()
+        # Left column
+        self._create_left_column()
+        
+        # Right column
+        self._create_right_column()
     
     def _create_header(self):
-        """Create the application header"""
-        header = ctk.CTkFrame(self, fg_color="transparent", height=80)
-        header.pack(fill="x", padx=24, pady=(24, 16))
+        """Create header"""
+        header = ctk.CTkFrame(self, fg_color=COLORS["bg_card"], height=70)
+        header.pack(fill="x")
         header.pack_propagate(False)
         
-        # Logo
-        title_frame = ctk.CTkFrame(header, fg_color="transparent")
-        title_frame.pack(side="left", fill="y")
+        inner = ctk.CTkFrame(header, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=20)
         
-        logo = ctk.CTkLabel(
-            title_frame,
+        # Logo
+        logo_frame = ctk.CTkFrame(inner, fg_color="transparent")
+        logo_frame.pack(side="left", fill="y")
+        
+        dot = StatusDot(logo_frame, status="active", size=10)
+        dot.pack(side="left", padx=(0, 10), pady=20)
+        
+        ctk.CTkLabel(
+            logo_frame,
             text="INTELLIBIN",
             font=FONTS["logo"],
-            text_color=COLORS["text_primary"]
-        )
-        logo.pack(side="left", pady=16)
+            text_color=COLORS["accent_primary"]
+        ).pack(side="left", pady=20)
         
-        subtitle = ctk.CTkLabel(
-            title_frame,
-            text="  Laboratory Waste Routing Simulator",
-            font=FONTS["body"],
+        ctk.CTkLabel(
+            logo_frame,
+            text="  WASTE DISPOSAL SYSTEM",
+            font=FONTS["tiny"],
             text_color=COLORS["text_secondary"]
-        )
-        subtitle.pack(side="left", pady=16, padx=(8, 0))
+        ).pack(side="left", pady=20)
         
-        # Controls
-        controls = ctk.CTkFrame(header, fg_color="transparent")
-        controls.pack(side="right", fill="y")
+        # Signature line
+        line_frame = ctk.CTkFrame(inner, fg_color="transparent")
+        line_frame.place(x=35, y=55)
+        SignatureLine(line_frame, width=140).pack()
         
-        # Time display
-        self.time_label = ctk.CTkLabel(
-            controls,
-            text=f"Date: {state_manager.simulated_time.strftime('%Y-%m-%d')}",
+        # Status
+        status_frame = ctk.CTkFrame(inner, fg_color="transparent")
+        status_frame.pack(side="right", fill="y")
+        
+        ctk.CTkLabel(
+            status_frame,
+            text="SYS_ONLINE",
             font=FONTS["small"],
-            text_color=COLORS["text_secondary"]
-        )
-        self.time_label.pack(side="left", padx=(0, 16), pady=24)
-        
-        # Advance time button
-        advance_btn = ctk.CTkButton(
-            controls,
-            text="+7 Days",
-            font=FONTS["small"],
-            fg_color=COLORS["bg_tertiary"],
-            text_color=COLORS["text_primary"],
-            hover_color=COLORS["border"],
-            corner_radius=8,
-            width=80,
-            height=32,
-            command=self._advance_time
-        )
-        advance_btn.pack(side="left", padx=(0, 8), pady=24)
-        
-        # Reset button
-        reset_btn = ctk.CTkButton(
-            controls,
-            text="Reset",
-            font=FONTS["small"],
-            fg_color=COLORS["bg_tertiary"],
-            text_color=COLORS["text_primary"],
-            hover_color=COLORS["border"],
-            corner_radius=8,
-            width=70,
-            height=32,
-            command=self._reset_simulation
-        )
-        reset_btn.pack(side="left", pady=24)
+            text_color=COLORS["status_success"]
+        ).pack(pady=25)
     
-    def _create_input_column(self):
-        """Create the left column with input form"""
-        column = Card(self.main_frame)
-        column.grid(row=0, column=0, sticky="nsew", padx=(0, 12), pady=0)
+    def _create_left_column(self):
+        """Create left column with input form and model"""
+        column = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        column.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        
+        # Input card
+        input_card = GlassCard(column)
+        input_card.pack(fill="x", pady=(0, 10))
         
         # Title
-        title = ctk.CTkLabel(
-            column,
-            text="Dispose Waste",
-            font=FONTS["heading"],
-            text_color=COLORS["text_primary"],
-            anchor="w"
-        )
-        title.pack(fill="x", padx=20, pady=(20, 4))
+        header = ctk.CTkFrame(input_card, fg_color="transparent")
+        header.pack(fill="x", padx=16, pady=(16, 8))
         
-        subtitle = ctk.CTkLabel(
-            column,
-            text="Select substance and quantity",
-            font=FONTS["small"],
-            text_color=COLORS["text_secondary"],
-            anchor="w"
-        )
-        subtitle.pack(fill="x", padx=20, pady=(0, 20))
-        
-        # Substance dropdown
-        sub_label = ctk.CTkLabel(
-            column,
-            text="Substance",
-            font=FONTS["body_bold"],
-            text_color=COLORS["text_primary"],
-            anchor="w"
-        )
-        sub_label.pack(fill="x", padx=20, pady=(0, 4))
-        
-        self.substance_var = ctk.StringVar(value=SUBSTANCES_LIST[0])
-        self.substance_dropdown = ctk.CTkComboBox(
-            column,
-            values=SUBSTANCES_LIST,
-            variable=self.substance_var,
-            font=FONTS["body"],
-            height=40,
-            corner_radius=8,
-            border_color=COLORS["border"],
-            fg_color=COLORS["bg_primary"],
-            button_color=COLORS["accent_blue"],
-            dropdown_font=FONTS["small"],
-            state="readonly"
-        )
-        self.substance_dropdown.pack(fill="x", padx=20, pady=(0, 16))
-        
-        # Quantity dropdown
-        qty_label = ctk.CTkLabel(
-            column,
-            text="Quantity (mL)",
-            font=FONTS["body_bold"],
-            text_color=COLORS["text_primary"],
-            anchor="w"
-        )
-        qty_label.pack(fill="x", padx=20, pady=(0, 4))
-        
-        self.quantity_var = ctk.StringVar(value="100")
-        self.quantity_dropdown = ctk.CTkComboBox(
-            column,
-            values=QUANTITY_OPTIONS,
-            variable=self.quantity_var,
-            font=FONTS["body"],
-            height=40,
-            corner_radius=8,
-            border_color=COLORS["border"],
-            fg_color=COLORS["bg_primary"],
-            button_color=COLORS["accent_blue"],
-            dropdown_font=FONTS["small"],
-            state="readonly"
-        )
-        self.quantity_dropdown.pack(fill="x", padx=20, pady=(0, 24))
-        
-        # Route button
-        self.route_btn = ctk.CTkButton(
-            column,
-            text="Check Routing",
-            font=FONTS["body_bold"],
-            fg_color=COLORS["accent_blue"],
-            hover_color="#0056b3",
-            corner_radius=8,
-            height=44,
-            command=self._route_substance
-        )
-        self.route_btn.pack(fill="x", padx=20, pady=(0, 16))
-        
-        # Result display
-        self.result_frame = Card(column, fg_color=COLORS["bg_primary"])
-        self.result_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-        
-        self.result_text = ctk.CTkTextbox(
-            self.result_frame,
-            font=FONTS["small"],
-            fg_color="transparent",
-            text_color=COLORS["text_primary"],
-            wrap="word",
-            height=150
-        )
-        self.result_text.pack(fill="both", expand=True, padx=12, pady=12)
-        self.result_text.insert("1.0", "Select a substance and click 'Check Routing' to see the result.")
-        self.result_text.configure(state="disabled")
-        
-        # Confirm disposal button
-        self.confirm_btn = ctk.CTkButton(
-            column,
-            text="Confirm Disposal",
-            font=FONTS["body_bold"],
-            fg_color=COLORS["accent_green"],
-            hover_color="#2da44e",
-            corner_radius=8,
-            height=44,
-            command=self._confirm_disposal
-        )
-        
-        self.current_route_result = None
-    
-    def _create_containers_column(self):
-        """Create the middle column with container status"""
-        column = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        column.grid(row=0, column=1, sticky="nsew", padx=12, pady=0)
-        
-        # Title
-        title_frame = ctk.CTkFrame(column, fg_color="transparent")
-        title_frame.pack(fill="x", pady=(0, 12))
-        
-        title = ctk.CTkLabel(
-            title_frame,
-            text="Container Status",
-            font=FONTS["heading"],
-            text_color=COLORS["text_primary"],
-            anchor="w"
-        )
-        title.pack(side="left")
-        
-        # Container grid
-        self.containers_frame = ctk.CTkFrame(column, fg_color="transparent")
-        self.containers_frame.pack(fill="both", expand=True)
-        
-        # Configure 2x3 grid
-        for i in range(3):
-            self.containers_frame.grid_columnconfigure(i, weight=1)
-        for i in range(2):
-            self.containers_frame.grid_rowconfigure(i, weight=1)
-        
-        self.container_cards = {}
-    
-    def _create_info_column(self):
-        """Create the right column with 3D model and log"""
-        column = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        column.grid(row=0, column=2, sticky="nsew", padx=(12, 0), pady=0)
-        
-        # 3D Model view
-        model_card = Card(column)
-        model_card.pack(fill="x", pady=(0, 12))
-        
-        self.model_view = Model3DView(model_card, model_path=str(self.model_path))
-        self.model_view.pack(fill="x", padx=12, pady=12)
-        
-        # Alerts section
-        alerts_card = Card(column)
-        alerts_card.pack(fill="x", pady=(0, 12))
-        
-        alerts_title = ctk.CTkLabel(
-            alerts_card,
-            text="Alerts",
+        StatusDot(header, status="active", size=8).pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(
+            header,
+            text="DISPOSE_ITEM",
             font=FONTS["subheading"],
-            text_color=COLORS["text_primary"],
-            anchor="w"
+            text_color=COLORS["accent_primary"]
+        ).pack(side="left")
+        
+        SignatureLine(input_card, width=80).pack(anchor="w", padx=16, pady=(0, 16))
+        
+        # Item dropdown label
+        ctk.CTkLabel(
+            input_card,
+            text="SELECT ITEM",
+            font=FONTS["tiny"],
+            text_color=COLORS["text_muted"]
+        ).pack(anchor="w", padx=16, pady=(0, 6))
+        
+        # Dropdown list (just item names, no tags)
+        item_names = [item["name"] for item in DISPOSABLES]
+        
+        self.selected_item = ctk.StringVar(value=item_names[0])
+        self.item_dropdown = ctk.CTkComboBox(
+            input_card,
+            values=item_names,
+            variable=self.selected_item,
+            font=FONTS["body"],
+            dropdown_font=FONTS["small"],
+            height=44,
+            corner_radius=8,
+            border_color=COLORS["border_glass"],
+            fg_color=COLORS["bg_elevated"],
+            button_color=COLORS["accent_primary"],
+            button_hover_color=COLORS["accent_hover"],
+            dropdown_fg_color=COLORS["bg_card"],
+            dropdown_hover_color=COLORS["bg_elevated"],
+            text_color=COLORS["text_main"],
+            state="readonly"
         )
-        alerts_title.pack(fill="x", padx=16, pady=(16, 8))
+        self.item_dropdown.pack(fill="x", padx=16, pady=(0, 20))
         
-        self.alerts_frame = ctk.CTkFrame(alerts_card, fg_color="transparent")
-        self.alerts_frame.pack(fill="x", padx=16, pady=(0, 16))
+        # Dispose button
+        self.dispose_btn = ctk.CTkButton(
+            input_card,
+            text="DISPOSE",
+            font=FONTS["button"],
+            fg_color=COLORS["accent_primary"],
+            hover_color=COLORS["accent_hover"],
+            corner_radius=8,
+            height=44,
+            command=self._dispose_item
+        )
+        self.dispose_btn.pack(fill="x", padx=16, pady=(0, 16))
         
-        # Log section
-        log_card = Card(column)
+        # Model illustration
+        model_card = GlassCard(column)
+        model_card.pack(fill="both", expand=True)
+        
+        self._create_model_illustration(model_card)
+    
+    def _create_model_illustration(self, parent):
+        """Create bin illustration with actual image"""
+        header = ctk.CTkFrame(parent, fg_color="transparent")
+        header.pack(fill="x", padx=12, pady=(12, 4))
+        
+        StatusDot(header, status="active", size=8).pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(
+            header,
+            text="INTELLIBIN",
+            font=FONTS["subheading"],
+            text_color=COLORS["accent_primary"]
+        ).pack(side="left")
+        
+        SignatureLine(parent, width=60).pack(anchor="w", padx=12, pady=(0, 8))
+        
+        # Load and display actual bin image
+        image_path = Path(__file__).parent / "bin_image.png"
+        
+        try:
+            # Load image and resize to fit
+            pil_image = Image.open(image_path)
+            
+            # Resize maintaining aspect ratio
+            max_size = (200, 200)
+            pil_image.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            # Create CTkImage for display
+            self.bin_image = ctk.CTkImage(
+                light_image=pil_image,
+                dark_image=pil_image,
+                size=pil_image.size
+            )
+            
+            # Image label
+            image_label = ctk.CTkLabel(
+                parent,
+                image=self.bin_image,
+                text=""
+            )
+            image_label.pack(pady=10)
+            
+        except Exception as e:
+            # Fallback to text if image fails
+            ctk.CTkLabel(
+                parent,
+                text="[BIN IMAGE]",
+                font=FONTS["body"],
+                text_color=COLORS["text_muted"]
+            ).pack(pady=20)
+        
+        # Status indicator below image
+        status_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        status_frame.pack(pady=(0, 12))
+        
+        StatusDot(status_frame, status="active", size=8).pack(side="left", padx=(0, 6))
+        ctk.CTkLabel(
+            status_frame,
+            text="SYSTEM ONLINE",
+            font=FONTS["tiny"],
+            text_color=COLORS["status_success"]
+        ).pack(side="left")
+    
+    def _create_right_column(self):
+        """Create right column with containers and log"""
+        column = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        column.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+        
+        # Containers section
+        containers_card = GlassCard(column)
+        containers_card.pack(fill="x", pady=(0, 10))
+        
+        # Containers header
+        header = ctk.CTkFrame(containers_card, fg_color="transparent")
+        header.pack(fill="x", padx=16, pady=(16, 8))
+        
+        StatusDot(header, status="active", size=8).pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(
+            header,
+            text="CONTAINERS",
+            font=FONTS["subheading"],
+            text_color=COLORS["accent_primary"]
+        ).pack(side="left")
+        
+        SignatureLine(containers_card, width=80).pack(anchor="w", padx=16, pady=(0, 12))
+        
+        # Container grid - 2 rows
+        self.containers_frame = ctk.CTkFrame(containers_card, fg_color="transparent")
+        self.containers_frame.pack(fill="x", padx=16, pady=(0, 16))
+        
+        # Row 1: Non-dangerous (full width)
+        self.nondanger_row = ctk.CTkFrame(self.containers_frame, fg_color="transparent")
+        self.nondanger_row.pack(fill="x", pady=(0, 8))
+        
+        ctk.CTkLabel(
+            self.nondanger_row,
+            text="NON-DANGEROUS",
+            font=FONTS["tiny"],
+            text_color=COLORS["safe"]
+        ).pack(anchor="w", pady=(0, 4))
+        
+        self.nondanger_container_frame = ctk.CTkFrame(self.nondanger_row, fg_color="transparent")
+        self.nondanger_container_frame.pack(fill="x")
+        
+        self.container_widgets = {}
+        self.container_widgets["NON-DANGEROUS"] = CompactContainerCard(
+            self.nondanger_container_frame, self.containers["NON-DANGEROUS"]
+        )
+        self.container_widgets["NON-DANGEROUS"].pack(fill="x")
+        
+        # Row 2: Dangerous containers (grid)
+        ctk.CTkLabel(
+            self.containers_frame,
+            text="DANGEROUS",
+            font=FONTS["tiny"],
+            text_color=COLORS["danger"]
+        ).pack(anchor="w", pady=(8, 4))
+        
+        self.danger_frame = ctk.CTkFrame(self.containers_frame, fg_color="transparent")
+        self.danger_frame.pack(fill="x")
+        
+        danger_containers = ["GLASS", "MICROBIO", "ALUMINIUM", "METALS", "SHARPS"]
+        
+        for i, key in enumerate(danger_containers):
+            col = i % 3
+            
+            if col == 0:
+                row_frame = ctk.CTkFrame(self.danger_frame, fg_color="transparent")
+                row_frame.pack(fill="x", pady=2)
+            
+            widget = CompactContainerCard(row_frame, self.containers[key])
+            widget.pack(side="left", fill="x", expand=True, padx=(0 if col == 0 else 4, 0))
+            self.container_widgets[key] = widget
+        
+        # Disposal Log section
+        log_card = GlassCard(column)
         log_card.pack(fill="both", expand=True)
         
-        log_title = ctk.CTkLabel(
-            log_card,
-            text="Disposal Log",
-            font=FONTS["subheading"],
-            text_color=COLORS["text_primary"],
-            anchor="w"
-        )
-        log_title.pack(fill="x", padx=16, pady=(16, 8))
+        # Log header
+        log_header = ctk.CTkFrame(log_card, fg_color="transparent")
+        log_header.pack(fill="x", padx=16, pady=(16, 8))
         
+        StatusDot(log_header, status="active", size=8).pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(
+            log_header,
+            text="DISPOSAL_LOG",
+            font=FONTS["subheading"],
+            text_color=COLORS["accent_primary"]
+        ).pack(side="left")
+        
+        self.log_count_label = ctk.CTkLabel(
+            log_header,
+            text="[0 entries]",
+            font=FONTS["tiny"],
+            text_color=COLORS["text_muted"]
+        )
+        self.log_count_label.pack(side="left", padx=(10, 0))
+        
+        SignatureLine(log_card, width=100).pack(anchor="w", padx=16, pady=(0, 8))
+        
+        # Log text
         self.log_text = ctk.CTkTextbox(
             log_card,
-            font=FONTS["tiny"],
-            fg_color=COLORS["bg_primary"],
-            text_color=COLORS["text_primary"],
+            font=FONTS["small"],
+            fg_color=COLORS["bg_elevated"],
+            text_color=COLORS["text_secondary"],
             corner_radius=8,
             wrap="word"
         )
         self.log_text.pack(fill="both", expand=True, padx=16, pady=(0, 16))
+        self.log_text.insert("1.0", "// No disposals yet\n// Select an item and click DISPOSE")
+        self.log_text.configure(state="disabled")
+    
+    def _dispose_item(self):
+        """Handle disposal"""
+        item_name = self.selected_item.get()
+        if not item_name:
+            return
+        
+        # Find item
+        item = next((i for i in DISPOSABLES if i["name"] == item_name), None)
+        if not item:
+            return
+        
+        # Find target container
+        if item["dangerous"]:
+            category = item["category"]
+            container_map = {
+                "glass": "GLASS",
+                "microbio": "MICROBIO",
+                "aluminium": "ALUMINIUM",
+                "metals": "METALS",
+                "sharps": "SHARPS",
+            }
+            container_key = container_map.get(category)
+        else:
+            container_key = "NON-DANGEROUS"
+        
+        if not container_key or container_key not in self.containers:
+            return
+        
+        # Update container fill
+        container = self.containers[container_key]
+        fill_amount = 50  # Each item adds 50 units
+        
+        if container["current_fill"] + fill_amount <= container["capacity"]:
+            container["current_fill"] += fill_amount
+            
+            # Log entry
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            log_entry = {
+                "time": timestamp,
+                "item": item_name,
+                "dangerous": item["dangerous"],
+                "container": container["id"],
+            }
+            self.disposal_log.insert(0, log_entry)
+            
+            # Update UI
+            self._refresh_containers()
+            self._refresh_log()
+            
+            # Show popup
+            self._show_disposal_popup(item, container)
+        else:
+            # Container full
+            self._show_error_popup(f"Container {container['id']} is full!")
+        
+        # Reset dropdown to first item
+        item_names = [item["name"] for item in DISPOSABLES]
+        self.selected_item.set(item_names[0])
     
     def _refresh_containers(self):
-        """Refresh the container display"""
-        # Clear existing cards
-        for widget in self.containers_frame.winfo_children():
+        """Refresh container displays"""
+        # Destroy old widgets
+        for key, widget in self.container_widgets.items():
             widget.destroy()
-        self.container_cards.clear()
         
-        # Get containers (limited to 6)
-        containers = state_manager.get_all_containers()[:6]
+        self.container_widgets = {}
         
-        # Create cards in 2x3 grid
-        for i, container in enumerate(containers):
-            row = i // 3
+        # Recreate non-dangerous
+        self.container_widgets["NON-DANGEROUS"] = CompactContainerCard(
+            self.nondanger_container_frame, self.containers["NON-DANGEROUS"]
+        )
+        self.container_widgets["NON-DANGEROUS"].pack(fill="x")
+        
+        # Clear and recreate dangerous
+        for child in self.danger_frame.winfo_children():
+            child.destroy()
+        
+        danger_containers = ["GLASS", "MICROBIO", "ALUMINIUM", "METALS", "SHARPS"]
+        row_frame = None
+        
+        for i, key in enumerate(danger_containers):
             col = i % 3
             
-            card = ContainerCard(self.containers_frame, container)
-            card.grid(row=row, column=col, sticky="nsew", padx=6, pady=6)
-            self.container_cards[container["container_id"]] = card
+            if col == 0:
+                row_frame = ctk.CTkFrame(self.danger_frame, fg_color="transparent")
+                row_frame.pack(fill="x", pady=2)
+            
+            widget = CompactContainerCard(row_frame, self.containers[key])
+            widget.pack(side="left", fill="x", expand=True, padx=(0 if col == 0 else 4, 0))
+            self.container_widgets[key] = widget
     
     def _refresh_log(self):
-        """Refresh the disposal log"""
+        """Refresh disposal log"""
         self.log_text.configure(state="normal")
         self.log_text.delete("1.0", "end")
         
-        log_entries = state_manager.get_disposal_log(limit=15)
-        
-        if not log_entries:
-            self.log_text.insert("1.0", "No disposals yet.")
+        if not self.disposal_log:
+            self.log_text.insert("1.0", "// No disposals yet\n// Select an item and click DISPOSE")
         else:
-            for entry in log_entries:
-                timestamp = entry["timestamp"][:10]
-                text = f"[{timestamp}]\n"
-                text += f"  {entry['substance']}\n"
-                text += f"  -> {entry['container_id']} ({entry['quantity_ml']}mL)\n\n"
-                self.log_text.insert("end", text)
+            for entry in self.disposal_log[:20]:  # Show last 20
+                danger_tag = "⚠" if entry["dangerous"] else "✓"
+                line = f"[{entry['time']}] {danger_tag} {entry['item']} → {entry['container']}\n"
+                self.log_text.insert("end", line)
         
         self.log_text.configure(state="disabled")
+        self.log_count_label.configure(text=f"[{len(self.disposal_log)} entries]")
     
-    def _refresh_alerts(self):
-        """Refresh the alerts display"""
-        for widget in self.alerts_frame.winfo_children():
-            widget.destroy()
+    def _show_disposal_popup(self, item, container):
+        """Show disposal confirmation popup"""
+        popup = ctk.CTkToplevel(self)
+        popup.title("Disposal Confirmed")
+        popup.geometry("350x280")
+        popup.configure(fg_color=COLORS["bg_pure"])
+        popup.transient(self)
+        popup.grab_set()
         
-        alerts = state_manager.get_alerts(include_acknowledged=False)
+        # Center
+        popup.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() // 2) - 175
+        y = self.winfo_y() + (self.winfo_height() // 2) - 140
+        popup.geometry(f"+{x}+{y}")
         
-        if not alerts:
-            no_alerts = ctk.CTkLabel(
-                self.alerts_frame,
-                text="No active alerts",
-                font=FONTS["small"],
-                text_color=COLORS["text_secondary"]
-            )
-            no_alerts.pack(anchor="w")
-        else:
-            for alert in alerts[:5]:
-                severity = alert["severity"].lower()
-                color = {
-                    "danger": COLORS["accent_red"],
-                    "caution": COLORS["accent_yellow"],
-                }.get(severity, COLORS["text_secondary"])
-                
-                alert_frame = ctk.CTkFrame(self.alerts_frame, fg_color="transparent")
-                alert_frame.pack(fill="x", pady=2)
-                
-                dot = ctk.CTkLabel(
-                    alert_frame,
-                    text="*",
-                    font=FONTS["body_bold"],
-                    text_color=color
-                )
-                dot.pack(side="left", padx=(0, 8))
-                
-                text = ctk.CTkLabel(
-                    alert_frame,
-                    text=alert['title'],
-                    font=FONTS["tiny"],
-                    text_color=COLORS["text_primary"],
-                    anchor="w"
-                )
-                text.pack(side="left", fill="x", expand=True)
+        # Content
+        card = GlassCard(popup, highlight=True)
+        card.pack(fill="both", expand=True, padx=16, pady=16)
+        
+        # Header
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.pack(fill="x", padx=16, pady=(16, 8))
+        
+        ctk.CTkLabel(
+            header,
+            text="✓",
+            font=(_FONT, 24, "bold"),
+            text_color=COLORS["status_success"]
+        ).pack(side="left", padx=(0, 10))
+        
+        ctk.CTkLabel(
+            header,
+            text="DISPOSED",
+            font=FONTS["subheading"],
+            text_color=COLORS["accent_primary"]
+        ).pack(side="left")
+        
+        SignatureLine(card, width=80).pack(anchor="w", padx=16, pady=(0, 12))
+        
+        # Info
+        info_frame = ctk.CTkFrame(card, fg_color=COLORS["bg_elevated"], corner_radius=8)
+        info_frame.pack(fill="x", padx=16, pady=(0, 12))
+        
+        for label, value in [
+            ("ITEM", item["name"]),
+            ("TYPE", "⚠ DANGEROUS" if item["dangerous"] else "✓ SAFE"),
+            ("CONTAINER", container["id"]),
+            ("FILL", f"{container['current_fill']}/{container['capacity']}"),
+        ]:
+            row = ctk.CTkFrame(info_frame, fg_color="transparent")
+            row.pack(fill="x", padx=12, pady=6)
+            ctk.CTkLabel(row, text=label, font=FONTS["tiny"],
+                text_color=COLORS["text_muted"], width=80, anchor="w").pack(side="left")
+            ctk.CTkLabel(row, text=value, font=FONTS["small"],
+                text_color=COLORS["text_main"], anchor="w").pack(side="left")
+        
+        # Close button
+        ctk.CTkButton(
+            card,
+            text="CLOSE",
+            font=FONTS["button"],
+            fg_color=COLORS["accent_primary"],
+            hover_color=COLORS["accent_hover"],
+            corner_radius=8,
+            height=36,
+            command=popup.destroy
+        ).pack(fill="x", padx=16, pady=(0, 16))
     
-    def _route_substance(self):
-        """Handle the route button click"""
-        substance = self.substance_var.get()
-        quantity_str = self.quantity_var.get()
+    def _show_error_popup(self, message):
+        """Show error popup"""
+        popup = ctk.CTkToplevel(self)
+        popup.title("Error")
+        popup.geometry("300x150")
+        popup.configure(fg_color=COLORS["bg_pure"])
+        popup.transient(self)
+        popup.grab_set()
         
-        try:
-            quantity = float(quantity_str)
-        except ValueError:
-            self._show_result("Please select a valid quantity.")
-            return
+        popup.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() // 2) - 150
+        y = self.winfo_y() + (self.winfo_height() // 2) - 75
+        popup.geometry(f"+{x}+{y}")
         
-        # Create request and route
-        request = RouteRequest(
-            substance=substance,
-            quantity_ml=quantity,
-            concentration="Standard"
-        )
+        card = GlassCard(popup)
+        card.pack(fill="both", expand=True, padx=16, pady=16)
         
-        result = routing_service.route(request)
-        self.current_route_result = result
+        ctk.CTkLabel(
+            card,
+            text="⚠ ERROR",
+            font=FONTS["subheading"],
+            text_color=COLORS["alert_error"]
+        ).pack(pady=(16, 8))
         
-        # Build result text
-        text = f"Substance: {result.substance}\n"
-        text += f"Category: {result.classified_as.category}\n"
-        text += f"Waste Stream: {result.classified_as.waste_stream}\n\n"
+        ctk.CTkLabel(
+            card,
+            text=message,
+            font=FONTS["small"],
+            text_color=COLORS["text_main"]
+        ).pack(pady=(0, 12))
         
-        if result.success:
-            routed = result.routed_to
-            text += f"ROUTE TO: {routed.container_id}\n"
-            text += f"Location: {routed.location}\n"
-            text += f"Fill: {routed.current_fill_percent:.0f}% -> {routed.after_fill_percent:.0f}%\n"
-            
-            if result.warnings:
-                text += f"\nWarnings:\n"
-                for warning in result.warnings:
-                    text += f"  - {warning}\n"
-            
-            # Show confirm button
-            self.confirm_btn.pack(fill="x", padx=20, pady=(0, 20))
-        else:
-            text += f"ERROR: {result.message}\n"
-            self.confirm_btn.pack_forget()
-        
-        self._show_result(text)
-    
-    def _show_result(self, text: str):
-        """Show result text"""
-        self.result_text.configure(state="normal")
-        self.result_text.delete("1.0", "end")
-        self.result_text.insert("1.0", text)
-        self.result_text.configure(state="disabled")
-    
-    def _confirm_disposal(self):
-        """Handle the confirm disposal button click"""
-        if not self.current_route_result or not self.current_route_result.success:
-            return
-        
-        result = self.current_route_result
-        quantity = float(self.quantity_var.get())
-        
-        try:
-            disposal = routing_service.dispose(
-                container_id=result.routed_to.container_id,
-                substance_name=result.substance,
-                quantity_ml=quantity,
-                concentration="Standard"
-            )
-            
-            # Update UI
-            self._show_result(
-                f"Disposal confirmed!\n\n"
-                f"Container: {disposal.container_id}\n"
-                f"New fill level: {disposal.fill_percent:.0f}%\n"
-                f"Logged at: {disposal.logged_at[:16].replace('T', ' ')}"
-            )
-            
-            # Hide confirm button
-            self.confirm_btn.pack_forget()
-            self.current_route_result = None
-            
-            # Refresh displays
-            self._refresh_containers()
-            self._refresh_log()
-            self._refresh_alerts()
-            
-        except Exception as e:
-            self._show_result(f"Error: {str(e)}")
-    
-    def _advance_time(self):
-        """Advance simulated time by 7 days"""
-        new_alerts = state_manager.advance_time(7)
-        self.time_label.configure(
-            text=f"Date: {state_manager.simulated_time.strftime('%Y-%m-%d')}"
-        )
-        self._refresh_alerts()
-        self._refresh_containers()
-        
-        if new_alerts > 0:
-            self._show_result(f"Time advanced by 7 days\n{new_alerts} new alert(s) generated.")
-        else:
-            self._show_result("Time advanced by 7 days.")
-    
-    def _reset_simulation(self):
-        """Reset the simulation to initial state"""
-        state_manager.reset()
-        self.time_label.configure(
-            text=f"Date: {state_manager.simulated_time.strftime('%Y-%m-%d')}"
-        )
-        self._refresh_containers()
-        self._refresh_log()
-        self._refresh_alerts()
-        
-        self.confirm_btn.pack_forget()
-        self.current_route_result = None
-        
-        self._show_result("Simulation reset to initial state.")
+        ctk.CTkButton(
+            card,
+            text="OK",
+            font=FONTS["button"],
+            fg_color=COLORS["accent_primary"],
+            hover_color=COLORS["accent_hover"],
+            corner_radius=8,
+            width=80,
+            command=popup.destroy
+        ).pack(pady=(0, 16))
 
 
 # ============================================
-# MAIN ENTRY POINT
+# MAIN
 # ============================================
 
 def main():
-    """Run the IntelliBin Simulator"""
-    print("=" * 50)
-    print("  INTELLIBIN Simulator")
-    print("  Laboratory Waste Routing System")
-    print("=" * 50)
+    print()
+    print("  INTELLIBIN v2.0 - Starting...")
     print()
     
     app = IntelliBinSimulator()

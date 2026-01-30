@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INTELLIBIN | Waste Disposal Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./simulator.css" />
+</head>
+
+<body>
+  <!-- Background Grid -->
+  <div class="grid-background"></div>
+
+  <!-- UI Overlay -->
+  <main class="simulator-main">
+    <!-- Tactical Header -->
+    <header class="tactical-header header-scrolled">
+      <div class="header-container">
+        <div class="nav-brand">
+          <span class="brand-text">INTELLIBIN</span>
+          <div class="brand-status">
+            <span class="status-dot"></span>
+            <span class="status-label">SIMULATOR_ACTIVE</span>
+          </div>
+        </div>
+
+        <nav class="nav-main">
+          <a href="./index.html" class="nav-link">[ HOME ]</a>
+          <a href="./index.html#tech" class="nav-link">[ PROTOCOL ]</a>
+          <a href="./index.html#security" class="nav-link">[ ARCHITECTURE ]</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="header-cta" onclick="resetSimulator()">
+            <span class="cta-text">EMPTY THE BINS</span>
+            <div class="cta-glimmer"></div>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Simulator Content -->
+    <section class="simulator-section">
+      <div class="simulator-container">
+        <!-- Left Column: Input & Model -->
+        <div class="sim-column sim-left">
+          <!-- Input Card -->
+          <div class="sim-card input-card">
+            <div class="card-spotlight"></div>
+            <div class="sim-card-header">
+              <div class="header-status">
+                <span class="status-dot-active"></span>
+                <span class="header-title">DISPOSE_ITEM</span>
+              </div>
+              <span class="header-tag">[ ACTIVE ]</span>
+            </div>
+            <div class="signature-line"></div>
+
+            <div class="input-section">
+              <label class="input-label">SELECT ITEM</label>
+              <select id="item-select" class="sim-select">
+                <!-- Options populated by JS -->
+              </select>
+            </div>
+
+            <button id="dispose-btn" class="dispose-btn">
+              <span>DISPOSE</span>
+              <div class="btn-flare"></div>
+            </button>
+          </div>
+
+          <!-- Model Card -->
+          <div class="sim-card model-card">
+            <div class="card-spotlight"></div>
+            <div class="sim-card-header">
+              <div class="header-status">
+                <span class="status-dot-active"></span>
+                <span class="header-title">INTELLIBIN</span>
+              </div>
+              <span class="header-tag">[ UNIT_V1 ]</span>
+            </div>
+            <div class="signature-line"></div>
+
+            <div class="model-display">
+              <img src="./public/bin_image.png" alt="IntelliBin" class="bin-image" onerror="this.style.display='none'">
+              <div class="model-fallback" id="model-fallback">
+                <div class="bin-illustration">
+                  <div class="bin-body"></div>
+                  <div class="bin-lid"></div>
+                  <div class="bin-label">INTELLI<br>BIN</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="model-status">
+              <span class="status-dot-green"></span>
+              <span class="status-text">SYSTEM ONLINE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Containers & Log -->
+        <div class="sim-column sim-right">
+          <!-- Containers Card -->
+          <div class="sim-card containers-card">
+            <div class="card-spotlight"></div>
+            <div class="sim-card-header">
+              <div class="header-status">
+                <span class="status-dot-active"></span>
+                <span class="header-title">CONTAINERS</span>
+              </div>
+              <span class="header-tag" id="container-count">[ 6 UNITS ]</span>
+            </div>
+            <div class="signature-line"></div>
+
+            <!-- Non-Dangerous Section -->
+            <div class="container-section">
+              <div class="section-label safe">NON-DANGEROUS</div>
+              <div id="safe-containers" class="container-row">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Dangerous Section -->
+            <div class="container-section">
+              <div class="section-label danger">DANGEROUS</div>
+              <div id="danger-containers" class="container-grid">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Disposal Log Card -->
+          <div class="sim-card log-card">
+            <div class="card-spotlight"></div>
+            <div class="sim-card-header">
+              <div class="header-status">
+                <span class="status-dot-active"></span>
+                <span class="header-title">DISPOSAL_LOG</span>
+              </div>
+              <span class="header-tag" id="log-count">[ 0 ENTRIES ]</span>
+            </div>
+            <div class="signature-line"></div>
+
+            <div id="disposal-log" class="log-content">
+              <div class="log-empty">
+                <span class="log-comment">// No disposals yet</span>
+                <span class="log-comment">// Select an item and click DISPOSE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Disposal Popup Modal -->
+  <div class="modal-overlay" id="disposal-modal">
+    <div class="modal-content disposal-popup">
+      <div class="modal-close" id="close-disposal-modal">+</div>
+
+      <div class="modal-header">
+        <div class="modal-badge" id="popup-badge">[ DISPOSAL_CONFIRMED ]</div>
+        <h2 class="modal-title" id="popup-title">ITEM DISPOSED</h2>
+      </div>
+
+      <div class="modal-body">
+        <div class="popup-details">
+          <div class="detail-row">
+            <span class="detail-label">ITEM</span>
+            <span class="detail-value" id="popup-item">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">TYPE</span>
+            <span class="detail-value" id="popup-type">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">CONTAINER</span>
+            <span class="detail-value" id="popup-container">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">TIMESTAMP</span>
+            <span class="detail-value" id="popup-time">-</span>
+          </div>
+        </div>
+
+        <button class="modal-next-btn" id="popup-close-btn">ACKNOWLEDGE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Popup Modal -->
+  <div class="modal-overlay" id="error-modal">
+    <div class="modal-content error-popup">
+      <div class="modal-close" id="close-error-modal">+</div>
+
+      <div class="modal-header">
+        <div class="modal-badge error-badge">[ ERROR ]</div>
+        <h2 class="modal-title">DISPOSAL FAILED</h2>
+      </div>
+
+      <div class="modal-body">
+        <p class="error-message" id="error-message">Container is full!</p>
+        <button class="modal-next-btn" id="error-close-btn">DISMISS</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./simulator.js"></script>
+</body>
+
+</html>

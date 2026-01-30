@@ -161,6 +161,15 @@ main {
   gap: 0.5rem;
 }
 
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent-orange);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent-glow);
+  animation: indicatorPulse 2s infinite ease-in-out;
+}
+
 .status-label {
   font-family: var(--font-mono);
   font-size: 0.6rem;
