@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INTELLIBIN | Laboratory Chemical Disposal Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./simulator-lab.css" />
+</head>
+
+<body>
+  <!-- Background Grid -->
+  <div class="grid-background"></div>
+
+  <!-- UI Overlay -->
+  <main class="simulator-main">
+    <!-- Tactical Header -->
+    <header class="tactical-header header-scrolled">
+      <div class="header-container">
+        <div class="nav-brand">
+          <span class="brand-text">INTELLIBIN</span>
+          <div class="brand-status">
+            <span class="status-dot"></span>
+            <span class="status-label">LAB_MODE</span>
+          </div>
+        </div>
+
+        <nav class="nav-main">
+          <a href="./index.html" class="nav-link">[ HOME ]</a>
+          <a href="./simulator.html" class="nav-link">[ AI_SIMULATOR ]</a>
+          <a href="./simulator-lab.html" class="nav-link active">[ LAB_SIMULATOR ]</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="header-cta" onclick="resetSimulator()">
+            <span class="cta-text">RESET_SYSTEM</span>
+            <div class="cta-glimmer"></div>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Simulator Content -->
+    <section class="simulator-section">
+      <div class="simulator-container">
+        <!-- Left Column: Input & Safety -->
+        <div class="sim-column sim-left">
+          <!-- Input Card -->
+          <div class="sim-card input-card">
+            <div class="card-spotlight"></div>
+            <div class="sim-card-header">
+              <div class="header-status">
+                <span class="status-dot-active"></span>
+                <span class="header-title">DISPOSE_CHEMICAL</span>
+              </div>
+              <span class="header-tag">[ MANUAL_INPUT ]</span>
+            </div>
+            <div class="signature-line"></div>
+
+            <div class="input-section">
+              <label class="input-label">SELECT CHEMICAL</label>
+              <select id="chemical-select" class="sim-select">
+                <!-- Options populated by JS -->
+              </select>
+            </div>
+
+            <div class="input-section">
+              <label class="input-label">QUANTITY (mL)</label>
+              <select id="quantity-select" class="sim-select">
+                <option value="50">50 mL</option>
+                <option value="100" selected>100 mL</option>
+                <option value="200">200 mL</option>
+                <option value="500">500 mL</option>
+              </select>
+            </div>
+
+            <div class="chemical-info" id="chemical-info">
+              <div class="info-row">
+                <span class="info-label">Category:</span>
+                <span class="info-value" id="info-category">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Hazard Level:</span>
+                <span class="info-value" id="info-hazard">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Target Container:</span>
+                <span class="info-value" id="info-container">-</span>
+              </div>
+            </div>
+
+            <button id="dispose-btn" class="dispose-btn">
+              <span>CHECK & DISPOSE</span>
+              <div class="btn-flare"></div>
+            </button>
+          </div>
+
+          <!-- Safety Status Card -->
+          <div class="sim-card safety-card">
+            <div class="card-spotlight"></div>
+            <div class="sim-card-header">
+              <div class="header-status">
+                <span class="status-dot-green" id="safety-dot"></span>
+                <span class="header-title">SAFETY_STATUS</span>
+              </div>
+              <span class="header-tag" id="safety-tag">[ SYSTEM_CLEAR ]</span>
+            </div>
+            <div class="signature-line"></div>
+
+            <div class="safety-display" id="safety-display">
+              <div class="safety-indicator safe">
+                <div class="indicator-icon">OK</div>
+                <div class="indicator-text">No hazardous combinations detected</div>
+              </div>
+            </div>
+
+            <div class="safety-legend">
+              <div class="legend-item">
+                <span class="legend-dot safe"></span>
+                <span>Safe to dispose</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot warning"></span>
+                <span>Caution advised</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot danger"></span>
+                <span>Dangerous reaction</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Containers & Log -->
+        <div class="sim-column sim-right">
+          <!-- Containers Card -->
+          <div class="sim-card containers-card">
+            <div class="card-spotlight"></div>
+            <div class="sim-card-header">
+              <div class="header-status">
+                <span class="status-dot-active"></span>
+                <span class="header-title">CHEMICAL_CONTAINERS</span>
+              </div>
+              <span class="header-tag" id="container-count">[ 6 UNITS ]</span>
+            </div>
+            <div class="signature-line"></div>
+
+            <!-- Chemical Containers Grid -->
+            <div class="chemical-containers" id="chemical-containers">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Disposal Log Card -->
+          <div class="sim-card log-card">
+            <div class="card-spotlight"></div>
+            <div class="sim-card-header">
+              <div class="header-status">
+                <span class="status-dot-active"></span>
+                <span class="header-title">DISPOSAL_LOG</span>
+              </div>
+              <span class="header-tag" id="log-count">[ 0 ENTRIES ]</span>
+            </div>
+            <div class="signature-line"></div>
+
+            <div id="disposal-log" class="log-content">
+              <div class="log-empty">
+                <span class="log-comment">// No disposals yet</span>
+                <span class="log-comment">// Select a chemical and click DISPOSE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Disposal Confirmation Modal -->
+  <div class="modal-overlay" id="disposal-modal">
+    <div class="modal-content disposal-popup">
+      <div class="modal-close" id="close-disposal-modal">+</div>
+
+      <div class="modal-header">
+        <div class="modal-badge" id="popup-badge">[ DISPOSAL_CONFIRMED ]</div>
+        <h2 class="modal-title" id="popup-title">CHEMICAL DISPOSED</h2>
+      </div>
+
+      <div class="modal-body">
+        <div class="popup-details">
+          <div class="detail-row">
+            <span class="detail-label">CHEMICAL</span>
+            <span class="detail-value" id="popup-chemical">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">CATEGORY</span>
+            <span class="detail-value" id="popup-category">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">QUANTITY</span>
+            <span class="detail-value" id="popup-quantity">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">CONTAINER</span>
+            <span class="detail-value" id="popup-container">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">TIMESTAMP</span>
+            <span class="detail-value" id="popup-time">-</span>
+          </div>
+        </div>
+
+        <button class="modal-next-btn" id="popup-close-btn">ACKNOWLEDGE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danger Alert Modal -->
+  <div class="modal-overlay" id="danger-modal">
+    <div class="modal-content danger-popup">
+      <div class="modal-close" id="close-danger-modal">+</div>
+
+      <div class="modal-header danger">
+        <div class="modal-badge danger-badge">[ HAZARD_DETECTED ]</div>
+        <h2 class="modal-title">DANGEROUS REACTION</h2>
+      </div>
+
+      <div class="modal-body">
+        <div class="danger-icon">!</div>
+        <div class="danger-details">
+          <p class="danger-chemical" id="danger-chemical">-</p>
+          <p class="danger-reaction" id="danger-reaction">-</p>
+          <p class="danger-consequence" id="danger-consequence">-</p>
+        </div>
+
+        <div class="danger-existing">
+          <span class="existing-label">INCOMPATIBLE WITH:</span>
+          <div class="existing-chemicals" id="existing-chemicals">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="danger-actions">
+          <button class="modal-cancel-btn" id="danger-cancel-btn">CANCEL DISPOSAL</button>
+          <button class="modal-force-btn" id="danger-force-btn">FORCE DISPOSAL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Modal -->
+  <div class="modal-overlay" id="error-modal">
+    <div class="modal-content error-popup">
+      <div class="modal-close" id="close-error-modal">+</div>
+
+      <div class="modal-header">
+        <div class="modal-badge error-badge">[ ERROR ]</div>
+        <h2 class="modal-title">DISPOSAL FAILED</h2>
+      </div>
+
+      <div class="modal-body">
+        <p class="error-message" id="error-message">Container is full!</p>
+        <button class="modal-next-btn" id="error-close-btn">DISMISS</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./simulator-lab.js"></script>
+</body>
+
+</html>

@@ -11,6 +11,12 @@ body {
   pointer-events: auto;
 }
 
+/* Active nav link */
+.nav-link.active {
+  color: var(--accent-orange);
+  border-bottom: 2px solid var(--accent-orange);
+}
+
 /* ========== SIMULATOR SECTION ========== */
 .simulator-section {
   min-height: 100vh;

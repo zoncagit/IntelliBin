@@ -1976,3 +1976,115 @@ main {
 }
 
 /* ========== END MODAL ========== */
+
+/* ========== HOW IT WORKS - VERSION LABELS ========== */
+.how-version-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-orange);
+  letter-spacing: 2px;
+  margin-bottom: 1.5rem;
+  margin-top: 3rem;
+  padding: 0.5rem 1rem;
+  background: rgba(219, 131, 92, 0.1);
+  border-left: 3px solid var(--accent-orange);
+  display: inline-block;
+}
+
+.how-version-label.lab {
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  border-left-color: #10B981;
+}
+
+.how-version-label:first-of-type {
+  margin-top: 0;
+}
+
+/* Lab version cards */
+.how-card.lab {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.how-card.lab:hover {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 20px 50px rgba(16, 185, 129, 0.15);
+}
+
+.how-card.lab.active {
+  border-color: #10B981;
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+}
+
+.how-icon-box.lab {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.how-card.lab .how-index {
+  color: #10B981;
+}
+
+.how-card.lab .how-arrow svg {
+  stroke: #10B981;
+}
+
+/* HUD Link in cards */
+.hud-link {
+  display: inline-block;
+  margin-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-orange);
+  text-decoration: none;
+  letter-spacing: 1px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent-orange);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.hud-link:hover {
+  background: var(--accent-orange);
+  color: #fff;
+}
+
+/* ========== DUAL MONOLITH CARDS ========== */
+.monolith-wrapper.dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 900px;
+}
+
+.monolith-card.lab {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.monolith-card.lab:hover {
+  border-color: rgba(16, 185, 129, 0.6);
+}
+
+.monolith-glow.lab {
+  background: radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+}
+
+.reserve-btn.lab {
+  background: #10B981;
+}
+
+.reserve-btn.lab:hover {
+  background: #059669;
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+}
+
+.bar-fill.lab {
+  background: linear-gradient(90deg, #10B981, #059669);
+}
+
+@media (max-width: 768px) {
+  .monolith-wrapper.dual {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
