@@ -274,6 +274,7 @@ const CONTAINERS = {
 
 let disposalLog = [];
 let pendingDisposal = null;
+let selectedChemicalId = null;
 
 // DOM Elements
 let elements = {};
@@ -284,11 +285,10 @@ let elements = {};
 
 document.addEventListener("DOMContentLoaded", () => {
   cacheElements();
-  initializeDropdown();
+  initializeSearchDropdown();
   renderContainers();
   renderLog();
   setupEventListeners();
-  updateChemicalInfo();
 });
 
 function cacheElements() {
@@ -315,11 +315,34 @@ function cacheElements() {
   };
 }
 
-function initializeDropdown() {
+// ============================================
+// CHEMICAL DROPDOWN
+// ============================================
+
+const CATEGORY_NAMES = {
+  [CHEMICAL_CATEGORIES.WEAK_ACID]: "Weak Acid",
+  [CHEMICAL_CATEGORIES.STRONG_ACID]: "Strong Acid",
+  [CHEMICAL_CATEGORIES.HALOGENATED_SOLVENT]: "Halogenated Solvent",
+  [CHEMICAL_CATEGORIES.NON_HALOGENATED_SOLVENT]: "Non-Halogenated Solvent",
+  [CHEMICAL_CATEGORIES.BASE]: "Base",
+  [CHEMICAL_CATEGORIES.OXIDIZER]: "Oxidizer"
+};
+
+function initializeSearchDropdown() {
+  populateChemicalSelect();
+  
+  // Select first chemical by default
+  if (CHEMICALS.length > 0) {
+    elements.chemicalSelect.value = CHEMICALS[0].id;
+    updateChemicalInfo();
+  }
+}
+
+function populateChemicalSelect() {
   const select = elements.chemicalSelect;
   select.innerHTML = "";
   
-  // Group chemicals by category
+  // Group by category
   const grouped = {};
   CHEMICALS.forEach(chem => {
     if (!grouped[chem.category]) {
@@ -328,24 +351,14 @@ function initializeDropdown() {
     grouped[chem.category].push(chem);
   });
   
-  // Create optgroups
-  const categoryNames = {
-    [CHEMICAL_CATEGORIES.WEAK_ACID]: "Weak Acids",
-    [CHEMICAL_CATEGORIES.STRONG_ACID]: "Strong Acids",
-    [CHEMICAL_CATEGORIES.HALOGENATED_SOLVENT]: "Halogenated Solvents",
-    [CHEMICAL_CATEGORIES.NON_HALOGENATED_SOLVENT]: "Non-Halogenated Solvents",
-    [CHEMICAL_CATEGORIES.BASE]: "Bases",
-    [CHEMICAL_CATEGORIES.OXIDIZER]: "Oxidizers"
-  };
-  
-  Object.entries(grouped).forEach(([category, chemicals]) => {
+  Object.entries(grouped).forEach(([category, chems]) => {
     const optgroup = document.createElement("optgroup");
-    optgroup.label = categoryNames[category];
+    optgroup.label = CATEGORY_NAMES[category];
     
-    chemicals.forEach(chem => {
+    chems.forEach(chem => {
       const option = document.createElement("option");
       option.value = chem.id;
-      option.textContent = chem.name;
+      option.textContent = `${chem.name} (${chem.hazard.toUpperCase()})`;
       optgroup.appendChild(option);
     });
     
@@ -354,8 +367,10 @@ function initializeDropdown() {
 }
 
 function setupEventListeners() {
-  // Chemical selection change
-  elements.chemicalSelect.addEventListener("change", updateChemicalInfo);
+  // Chemical select change
+  elements.chemicalSelect.addEventListener("change", () => {
+    updateChemicalInfo();
+  });
   
   // Dispose button
   elements.disposeBtn.addEventListener("click", handleDispose);
