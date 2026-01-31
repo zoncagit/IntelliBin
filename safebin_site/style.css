@@ -7,7 +7,7 @@
   --accent-glow-strong: rgba(219, 131, 92, 0.6);
   --accent-alert: #FF3B30;
 
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(219, 131, 92, 0.2);

@@ -1,119 +1,144 @@
 /**
- * IntelliBin Web Simulator
- * Waste disposal simulation system
+ * IntelliBin AI Simulator
+ * Waste-specific material classification using Hugging Face model
  */
 
 // ============================================
-// DATA DEFINITIONS
+// CONFIGURATION
 // ============================================
 
-const DISPOSABLES = [
-  // Non-dangerous items
-  { name: "Plastic Bottle", dangerous: false, category: "plastic" },
-  { name: "Plastic Wrapper", dangerous: false, category: "plastic" },
-  { name: "Paper Sheet", dangerous: false, category: "paper" },
-  { name: "Cardboard Box", dangerous: false, category: "paper" },
-  { name: "Newspaper", dangerous: false, category: "paper" },
-  
-  // Dangerous items
-  { name: "Glass Vial", dangerous: true, category: "glass" },
-  { name: "Broken Beaker", dangerous: true, category: "glass" },
-  { name: "Petri Dish (Used)", dangerous: true, category: "microbio" },
-  { name: "Culture Sample", dangerous: true, category: "microbio" },
-  { name: "Contaminated Swab", dangerous: true, category: "microbio" },
-  { name: "Aluminium Can", dangerous: true, category: "aluminium" },
-  { name: "Foil Wrapper", dangerous: true, category: "aluminium" },
-  { name: "Metal Scrap", dangerous: true, category: "metals" },
-  { name: "Wire Fragments", dangerous: true, category: "metals" },
-  { name: "Used Syringe", dangerous: true, category: "sharps" },
-  { name: "Scalpel Blade", dangerous: true, category: "sharps" },
-];
+const API_URL = "http://localhost:8000";
+const CONFIDENCE_THRESHOLD = 0.5;
+
+// ============================================
+// MATERIAL CONTAINERS (5 Categories Only)
+// ============================================
 
 const CONTAINERS = {
-  "NON-DANGEROUS": {
+  paper: {
     id: "BIN-001",
-    name: "General Waste",
+    name: "Paper",
+    material: "paper",
     capacity: 500,
     current_fill: 0,
-    dangerous: false,
+    color: "#4A90D9",
+    icon: "P"
   },
-  "GLASS": {
+  plastic: {
     id: "BIN-002",
-    name: "Glass Container",
-    capacity: 300,
+    name: "Plastic",
+    material: "plastic",
+    capacity: 500,
     current_fill: 0,
-    dangerous: true,
+    color: "#E6A23C",
+    icon: "PL"
   },
-  "MICROBIO": {
+  glass: {
     id: "BIN-003",
-    name: "Biohazard",
-    capacity: 200,
+    name: "Glass",
+    material: "glass",
+    capacity: 300,
     current_fill: 0,
-    dangerous: true,
+    color: "#67C23A",
+    icon: "G"
   },
-  "ALUMINIUM": {
+  metal: {
     id: "BIN-004",
-    name: "Aluminium",
-    capacity: 300,
+    name: "Metal",
+    material: "metal",
+    capacity: 400,
     current_fill: 0,
-    dangerous: true,
+    color: "#909399",
+    icon: "M"
   },
-  "METALS": {
+  other: {
     id: "BIN-005",
-    name: "Metal Waste",
-    capacity: 300,
+    name: "Other Materials",
+    material: "other",
+    capacity: 500,
     current_fill: 0,
-    dangerous: true,
-  },
-  "SHARPS": {
-    id: "BIN-006",
-    name: "Sharps Disposal",
-    capacity: 150,
-    current_fill: 0,
-    dangerous: true,
-  },
+    color: "#F56C6C",
+    icon: "O"
+  }
 };
 
-// Category to container mapping
-const CATEGORY_MAP = {
-  plastic: "NON-DANGEROUS",
-  paper: "NON-DANGEROUS",
-  glass: "GLASS",
-  microbio: "MICROBIO",
-  aluminium: "ALUMINIUM",
-  metals: "METALS",
-  sharps: "SHARPS",
-};
+// ============================================
+// STATE
+// ============================================
 
-// State
 let disposalLog = [];
+let currentDetection = null;
+let cameraStream = null;
+let isScanning = false;
+
+// DOM Elements
+let elements = {};
 
 // ============================================
 // INITIALIZATION
 // ============================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  initializeDropdown();
+  cacheElements();
   renderContainers();
   renderLog();
   setupEventListeners();
+  checkAPIHealth();
 });
 
-function initializeDropdown() {
-  const select = document.getElementById("item-select");
-  select.innerHTML = "";
-  
-  DISPOSABLES.forEach((item, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = item.name;
-    select.appendChild(option);
-  });
+function cacheElements() {
+  elements = {
+    // Scanner
+    cameraFeed: document.getElementById("camera-feed"),
+    captureCanvas: document.getElementById("capture-canvas"),
+    previewImage: document.getElementById("preview-image"),
+    scanOverlay: document.getElementById("scan-overlay"),
+    scannerPlaceholder: document.getElementById("scanner-placeholder"),
+    scannerStatus: document.getElementById("scanner-status"),
+    
+    // Buttons
+    scanBtn: document.getElementById("scan-btn"),
+    cameraBtn: document.getElementById("camera-btn"),
+    uploadInput: document.getElementById("upload-input"),
+    confirmDisposeBtn: document.getElementById("confirm-dispose-btn"),
+    rescanBtn: document.getElementById("rescan-btn"),
+    retryBtn: document.getElementById("retry-btn"),
+    
+    // Result displays
+    detectionResult: document.getElementById("detection-result"),
+    detectionError: document.getElementById("detection-error"),
+    resultMaterial: document.getElementById("result-material"),
+    resultObject: document.getElementById("result-object"),
+    resultConfidence: document.getElementById("result-confidence"),
+    errorText: document.getElementById("error-text"),
+    
+    // Containers & Log
+    materialContainers: document.getElementById("material-containers"),
+    disposalLog: document.getElementById("disposal-log"),
+    logCount: document.getElementById("log-count"),
+    
+    // Modals
+    disposalModal: document.getElementById("disposal-modal"),
+    errorModal: document.getElementById("error-modal")
+  };
 }
 
 function setupEventListeners() {
-  // Dispose button
-  document.getElementById("dispose-btn").addEventListener("click", handleDispose);
+  // Scan button
+  elements.scanBtn.addEventListener("click", handleScan);
+  
+  // Camera toggle
+  elements.cameraBtn.addEventListener("click", toggleCamera);
+  
+  // File upload
+  elements.uploadInput.addEventListener("change", handleFileUpload);
+  
+  // Confirm disposal
+  elements.confirmDisposeBtn.addEventListener("click", handleDispose);
+  
+  // Rescan buttons
+  elements.rescanBtn.addEventListener("click", resetScanner);
+  elements.retryBtn.addEventListener("click", resetScanner);
   
   // Modal close buttons
   document.getElementById("close-disposal-modal").addEventListener("click", closeDisposalModal);
@@ -122,83 +147,257 @@ function setupEventListeners() {
   document.getElementById("error-close-btn").addEventListener("click", closeErrorModal);
   
   // Close modals on overlay click
-  document.getElementById("disposal-modal").addEventListener("click", (e) => {
+  elements.disposalModal.addEventListener("click", (e) => {
     if (e.target.id === "disposal-modal") closeDisposalModal();
   });
-  document.getElementById("error-modal").addEventListener("click", (e) => {
+  elements.errorModal.addEventListener("click", (e) => {
     if (e.target.id === "error-modal") closeErrorModal();
   });
 }
 
 // ============================================
-// RENDERING
+// API COMMUNICATION
 // ============================================
 
-function renderContainers() {
-  const safeContainer = document.getElementById("safe-containers");
-  const dangerContainer = document.getElementById("danger-containers");
-  
-  safeContainer.innerHTML = "";
-  dangerContainer.innerHTML = "";
-  
-  Object.entries(CONTAINERS).forEach(([key, container]) => {
-    const widget = createContainerWidget(key, container);
-    
-    if (container.dangerous) {
-      dangerContainer.appendChild(widget);
+async function checkAPIHealth() {
+  try {
+    const response = await fetch(`${API_URL}/health`);
+    if (response.ok) {
+      console.log("[Simulator] API connected");
+      updateScannerStatus("READY", true);
     } else {
-      safeContainer.appendChild(widget);
+      throw new Error("API not responding");
     }
+  } catch (error) {
+    console.warn("[Simulator] API not available:", error.message);
+    updateScannerStatus("API_OFFLINE", false);
+  }
+}
+
+async function detectMaterial(imageBlob) {
+  const formData = new FormData();
+  formData.append("image", imageBlob, "scan.jpg");
+  
+  try {
+    const response = await fetch(`${API_URL}/detect`, {
+      method: "POST",
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("[Simulator] Detection failed:", error);
+    throw error;
+  }
+}
+
+// ============================================
+// CAMERA HANDLING
+// ============================================
+
+async function toggleCamera() {
+  if (cameraStream) {
+    stopCamera();
+  } else {
+    await startCamera();
+  }
+}
+
+async function startCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "environment",
+        width: { ideal: 640 },
+        height: { ideal: 480 }
+      }
+    });
+    
+    elements.cameraFeed.srcObject = cameraStream;
+    elements.cameraFeed.style.display = "block";
+    elements.scannerPlaceholder.style.display = "none";
+    elements.previewImage.style.display = "none";
+    
+    updateScannerStatus("CAMERA_ACTIVE", true);
+    console.log("[Simulator] Camera started");
+    
+  } catch (error) {
+    console.error("[Simulator] Camera error:", error);
+    showError("Camera access denied or unavailable");
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  
+  elements.cameraFeed.srcObject = null;
+  elements.cameraFeed.style.display = "none";
+  elements.scannerPlaceholder.style.display = "flex";
+  
+  updateScannerStatus("READY", true);
+}
+
+function captureFrame() {
+  const video = elements.cameraFeed;
+  const canvas = elements.captureCanvas;
+  
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0);
+  
+  return new Promise(resolve => {
+    canvas.toBlob(resolve, "image/jpeg", 0.9);
   });
 }
 
-function createContainerWidget(key, container) {
-  const fillPercent = (container.current_fill / container.capacity) * 100;
-  const isFull = fillPercent >= 100;
-  const isWarning = fillPercent >= 70 && fillPercent < 100;
+// ============================================
+// FILE UPLOAD HANDLING
+// ============================================
+
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
   
-  const widget = document.createElement("div");
-  widget.className = `container-widget ${isFull ? "full" : ""}`;
-  widget.innerHTML = `
-    <div class="container-header">
-      <span class="container-id">${container.id}</span>
-      <span class="container-status ${isFull ? "full" : isWarning ? "warning" : ""}"></span>
-    </div>
-    <div class="container-name">${container.name}</div>
-    <div class="container-bar">
-      <div class="container-bar-fill ${isFull ? "full" : isWarning ? "high" : ""}" 
-           style="width: ${Math.min(fillPercent, 100)}%"></div>
-    </div>
-    <div class="container-fill-text">${container.current_fill}/${container.capacity}</div>
-  `;
+  // Stop camera if running
+  stopCamera();
   
-  return widget;
+  // Show preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    elements.previewImage.src = e.target.result;
+    elements.previewImage.style.display = "block";
+    elements.scannerPlaceholder.style.display = "none";
+  };
+  reader.readAsDataURL(file);
+  
+  // Process the file
+  processImage(file);
+  
+  // Reset input for re-uploads
+  event.target.value = "";
 }
 
-function renderLog() {
-  const logContainer = document.getElementById("disposal-log");
-  const logCount = document.getElementById("log-count");
+// ============================================
+// SCANNING LOGIC
+// ============================================
+
+async function handleScan() {
+  if (isScanning) return;
   
-  logCount.textContent = `[ ${disposalLog.length} ENTRIES ]`;
+  // Determine image source
+  let imageBlob;
   
-  if (disposalLog.length === 0) {
-    logContainer.innerHTML = `
-      <div class="log-empty">
-        <span class="log-comment">// No disposals yet</span>
-        <span class="log-comment">// Select an item and click DISPOSE</span>
-      </div>
-    `;
+  if (cameraStream) {
+    // Capture from camera
+    imageBlob = await captureFrame();
+    
+    // Show captured frame
+    elements.cameraFeed.style.display = "none";
+    elements.previewImage.src = elements.captureCanvas.toDataURL();
+    elements.previewImage.style.display = "block";
+    
+  } else if (elements.previewImage.src && elements.previewImage.style.display !== "none") {
+    // Use existing preview (from upload)
+    const response = await fetch(elements.previewImage.src);
+    imageBlob = await response.blob();
+    
+  } else {
+    showError("Please start camera or upload an image first");
     return;
   }
   
-  logContainer.innerHTML = disposalLog.slice(0, 20).map(entry => `
-    <div class="log-entry">
-      <span class="log-time">[${entry.time}]</span>
-      <span class="log-icon ${entry.dangerous ? "danger" : "safe"}">${entry.dangerous ? "⚠" : "✓"}</span>
-      <span class="log-item">${entry.item}</span>
-      <span class="log-container">→ ${entry.container}</span>
-    </div>
-  `).join("");
+  await processImage(imageBlob);
+}
+
+async function processImage(imageBlob) {
+  isScanning = true;
+  updateScannerStatus("SCANNING", true);
+  elements.scanOverlay.classList.add("scanning");
+  
+  // Hide previous results
+  elements.detectionResult.style.display = "none";
+  elements.detectionError.style.display = "none";
+  
+  try {
+    const result = await detectMaterial(imageBlob);
+    console.log("[Simulator] Detection result:", result);
+    
+    // Check confidence threshold
+    if (result.confidence < CONFIDENCE_THRESHOLD) {
+      showDetectionError("Unable to classify item. Confidence too low. Please try again.");
+      return;
+    }
+    
+    // Store result and show
+    currentDetection = result;
+    showDetectionResult(result);
+    
+  } catch (error) {
+    showDetectionError("Detection failed. Please check if the API is running.");
+  } finally {
+    isScanning = false;
+    elements.scanOverlay.classList.remove("scanning");
+    updateScannerStatus("SCAN_COMPLETE", true);
+  }
+}
+
+function showDetectionResult(result) {
+  const materialName = result.material.toUpperCase();
+  const confidence = Math.round(result.confidence * 100);
+  const detectedObject = result.detected_object || "unknown";
+  
+  elements.resultMaterial.textContent = materialName;
+  elements.resultMaterial.className = `result-material material-${result.material}`;
+  elements.resultConfidence.textContent = `${confidence}%`;
+  
+  // Show detected object name
+  if (elements.resultObject) {
+    elements.resultObject.textContent = detectedObject;
+  }
+  
+  elements.detectionResult.style.display = "block";
+  elements.detectionError.style.display = "none";
+}
+
+function showDetectionError(message) {
+  elements.errorText.textContent = message;
+  elements.detectionError.style.display = "block";
+  elements.detectionResult.style.display = "none";
+}
+
+function resetScanner() {
+  currentDetection = null;
+  
+  // Hide results
+  elements.detectionResult.style.display = "none";
+  elements.detectionError.style.display = "none";
+  
+  // Reset preview
+  elements.previewImage.style.display = "none";
+  elements.previewImage.src = "";
+  
+  // Show camera or placeholder
+  if (cameraStream) {
+    elements.cameraFeed.style.display = "block";
+  } else {
+    elements.scannerPlaceholder.style.display = "flex";
+  }
+  
+  updateScannerStatus("READY", true);
+}
+
+function updateScannerStatus(status, online) {
+  elements.scannerStatus.textContent = `[ ${status} ]`;
+  elements.scannerStatus.className = `header-tag ${online ? "" : "offline"}`;
 }
 
 // ============================================
@@ -206,17 +405,15 @@ function renderLog() {
 // ============================================
 
 function handleDispose() {
-  const select = document.getElementById("item-select");
-  const itemIndex = parseInt(select.value);
-  const item = DISPOSABLES[itemIndex];
+  if (!currentDetection) return;
   
-  if (!item) return;
+  const material = currentDetection.material;
+  const container = CONTAINERS[material];
   
-  // Find target container
-  const containerKey = CATEGORY_MAP[item.category];
-  const container = CONTAINERS[containerKey];
-  
-  if (!container) return;
+  if (!container) {
+    showErrorModal("Unknown material category");
+    return;
+  }
   
   // Check capacity
   const fillAmount = 50;
@@ -229,18 +426,19 @@ function handleDispose() {
   container.current_fill += fillAmount;
   
   // Log entry
-  const timestamp = new Date().toLocaleTimeString("en-US", { 
-    hour12: false, 
-    hour: "2-digit", 
-    minute: "2-digit", 
-    second: "2-digit" 
+  const timestamp = new Date().toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
   });
   
   const logEntry = {
     time: timestamp,
-    item: item.name,
-    dangerous: item.dangerous,
+    material: material,
+    confidence: currentDetection.confidence,
     container: container.id,
+    detected_object: currentDetection.detected_object
   };
   
   disposalLog.unshift(logEntry);
@@ -249,40 +447,111 @@ function handleDispose() {
   renderContainers();
   renderLog();
   
-  // Show confirmation popup
-  showDisposalModal(item, container, timestamp);
+  // Show confirmation
+  showDisposalModal(currentDetection, container, timestamp);
+  
+  // Reset scanner
+  resetScanner();
+}
+
+// ============================================
+// RENDERING
+// ============================================
+
+function renderContainers() {
+  const containerDiv = elements.materialContainers;
+  containerDiv.innerHTML = "";
+  
+  Object.entries(CONTAINERS).forEach(([key, container]) => {
+    const widget = createContainerWidget(container);
+    containerDiv.appendChild(widget);
+  });
+}
+
+function createContainerWidget(container) {
+  const fillPercent = (container.current_fill / container.capacity) * 100;
+  const isFull = fillPercent >= 100;
+  const isWarning = fillPercent >= 70 && fillPercent < 100;
+  
+  const widget = document.createElement("div");
+  widget.className = `material-widget ${isFull ? "full" : ""} material-${container.material}`;
+  widget.innerHTML = `
+    <div class="material-icon" style="background: ${container.color}">
+      ${container.icon}
+    </div>
+    <div class="material-info">
+      <div class="material-header">
+        <span class="material-name">${container.name}</span>
+        <span class="material-status ${isFull ? "full" : isWarning ? "warning" : ""}"></span>
+      </div>
+      <div class="material-id">${container.id}</div>
+      <div class="material-bar">
+        <div class="material-bar-fill ${isFull ? "full" : isWarning ? "high" : ""}" 
+             style="width: ${Math.min(fillPercent, 100)}%; background: ${container.color}"></div>
+      </div>
+      <div class="material-fill-text">${container.current_fill}/${container.capacity}</div>
+    </div>
+  `;
+  
+  return widget;
+}
+
+function renderLog() {
+  const logContainer = elements.disposalLog;
+  const logCount = elements.logCount;
+  
+  logCount.textContent = `[ ${disposalLog.length} ENTRIES ]`;
+  
+  if (disposalLog.length === 0) {
+    logContainer.innerHTML = `
+      <div class="log-empty">
+        <span class="log-comment">// No disposals yet</span>
+        <span class="log-comment">// Scan an item to begin</span>
+      </div>
+    `;
+    return;
+  }
+  
+  logContainer.innerHTML = disposalLog.slice(0, 20).map(entry => `
+    <div class="log-entry">
+      <span class="log-time">[${entry.time}]</span>
+      <span class="log-object">${entry.detected_object || "item"}</span>
+      <span class="log-material material-${entry.material}">${entry.material.toUpperCase()}</span>
+      <span class="log-confidence">${Math.round(entry.confidence * 100)}%</span>
+      <span class="log-container">${entry.container}</span>
+    </div>
+  `).join("");
 }
 
 // ============================================
 // MODALS
 // ============================================
 
-function showDisposalModal(item, container, timestamp) {
-  const modal = document.getElementById("disposal-modal");
-  
-  document.getElementById("popup-item").textContent = item.name;
-  
-  const typeValue = document.getElementById("popup-type");
-  typeValue.textContent = item.dangerous ? "⚠ DANGEROUS" : "✓ SAFE";
-  typeValue.className = `detail-value ${item.dangerous ? "danger" : "safe"}`;
-  
+function showDisposalModal(detection, container, timestamp) {
+  document.getElementById("popup-object").textContent = detection.detected_object || "item";
+  document.getElementById("popup-material").textContent = detection.material.toUpperCase();
+  document.getElementById("popup-confidence").textContent = `${Math.round(detection.confidence * 100)}%`;
   document.getElementById("popup-container").textContent = `${container.id} (${container.name})`;
   document.getElementById("popup-time").textContent = timestamp;
   
-  modal.classList.add("active");
+  elements.disposalModal.classList.add("active");
 }
 
 function closeDisposalModal() {
-  document.getElementById("disposal-modal").classList.remove("active");
+  elements.disposalModal.classList.remove("active");
 }
 
 function showErrorModal(message) {
   document.getElementById("error-message").textContent = message;
-  document.getElementById("error-modal").classList.add("active");
+  elements.errorModal.classList.add("active");
 }
 
 function closeErrorModal() {
-  document.getElementById("error-modal").classList.remove("active");
+  elements.errorModal.classList.remove("active");
+}
+
+function showError(message) {
+  showDetectionError(message);
 }
 
 // ============================================
@@ -298,22 +567,23 @@ function resetSimulator() {
   // Clear log
   disposalLog = [];
   
+  // Reset scanner
+  resetScanner();
+  stopCamera();
+  
   // Re-render
   renderContainers();
   renderLog();
   
   // Show toast
-  showToast("SIMULATOR_RESET");
+  showToast("SYSTEM_RESET");
 }
 
-// Toast notification (reuse from main.js if available)
+// ============================================
+// UTILITIES
+// ============================================
+
 function showToast(message) {
-  // Check if showToast exists from main.js
-  if (window.showToast && window.showToast !== showToast) {
-    window.showToast(message);
-    return;
-  }
-  
   const toast = document.createElement("div");
   toast.style.cssText = `
     position: fixed;

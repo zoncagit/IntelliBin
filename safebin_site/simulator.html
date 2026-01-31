@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>INTELLIBIN | Waste Disposal Simulator</title>
+  <title>INTELLIBIN | AI Waste Classification Simulator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -27,7 +27,7 @@
           <span class="brand-text">INTELLIBIN</span>
           <div class="brand-status">
             <span class="status-dot"></span>
-            <span class="status-label">SIMULATOR_ACTIVE</span>
+            <span class="status-label">AI_ACTIVE</span>
           </div>
         </div>
 
@@ -39,7 +39,7 @@
 
         <div class="nav-actions">
           <button class="header-cta" onclick="resetSimulator()">
-            <span class="cta-text">EMPTY THE BINS</span>
+            <span class="cta-text">RESET_SYSTEM</span>
             <div class="cta-glimmer"></div>
           </button>
         </div>
@@ -49,31 +49,103 @@
     <!-- Simulator Content -->
     <section class="simulator-section">
       <div class="simulator-container">
-        <!-- Left Column: Input & Model -->
+        <!-- Left Column: Scanner & Model -->
         <div class="sim-column sim-left">
-          <!-- Input Card -->
-          <div class="sim-card input-card">
+          <!-- Scanner Card -->
+          <div class="sim-card scanner-card">
             <div class="card-spotlight"></div>
             <div class="sim-card-header">
               <div class="header-status">
                 <span class="status-dot-active"></span>
-                <span class="header-title">DISPOSE_ITEM</span>
+                <span class="header-title">AI_SCANNER</span>
               </div>
-              <span class="header-tag">[ ACTIVE ]</span>
+              <span class="header-tag" id="scanner-status">[ READY ]</span>
             </div>
             <div class="signature-line"></div>
 
-            <div class="input-section">
-              <label class="input-label">SELECT ITEM</label>
-              <select id="item-select" class="sim-select">
-                <!-- Options populated by JS -->
-              </select>
+            <!-- Camera Preview -->
+            <div class="scanner-preview">
+              <video id="camera-feed" autoplay playsinline></video>
+              <canvas id="capture-canvas" style="display: none;"></canvas>
+              <img id="preview-image" alt="Scanned item" style="display: none;">
+              
+              <!-- Scan overlay -->
+              <div class="scan-overlay" id="scan-overlay">
+                <div class="scan-line"></div>
+                <div class="scan-corners">
+                  <span class="corner tl"></span>
+                  <span class="corner tr"></span>
+                  <span class="corner bl"></span>
+                  <span class="corner br"></span>
+                </div>
+              </div>
+              
+              <!-- Placeholder when no camera -->
+              <div class="scanner-placeholder" id="scanner-placeholder">
+                <div class="placeholder-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </div>
+                <span class="placeholder-text">Camera ready</span>
+              </div>
             </div>
 
-            <button id="dispose-btn" class="dispose-btn">
-              <span>DISPOSE</span>
-              <div class="btn-flare"></div>
-            </button>
+            <!-- Scanner Controls -->
+            <div class="scanner-controls">
+              <button id="scan-btn" class="scan-btn primary">
+                <span>SCAN ITEM</span>
+                <div class="btn-flare"></div>
+              </button>
+              
+              <div class="control-row">
+                <button id="camera-btn" class="control-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  <span>CAMERA</span>
+                </button>
+                
+                <label class="control-btn upload-btn">
+                  <input type="file" id="upload-input" accept="image/*" style="display: none;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>UPLOAD</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Detection Result -->
+            <div class="detection-result" id="detection-result" style="display: none;">
+              <div class="result-header">
+                <span class="result-label">CLASSIFIED AS</span>
+                <span class="result-confidence" id="result-confidence">85%</span>
+              </div>
+              <div class="result-object" id="result-object">plastic</div>
+              <div class="result-category-row">
+                <span class="result-category-label">ROUTE TO</span>
+                <span class="result-material" id="result-material">PLASTIC</span>
+              </div>
+              <div class="result-action">
+                <button id="confirm-dispose-btn" class="dispose-btn">
+                  <span>DISPOSE</span>
+                  <div class="btn-flare"></div>
+                </button>
+                <button id="rescan-btn" class="rescan-btn">RESCAN</button>
+              </div>
+            </div>
+
+            <!-- Error State -->
+            <div class="detection-error" id="detection-error" style="display: none;">
+              <div class="error-icon">!</div>
+              <div class="error-text" id="error-text">Unable to classify item. Please try again.</div>
+              <button id="retry-btn" class="rescan-btn">TRY AGAIN</button>
+            </div>
           </div>
 
           <!-- Model Card -->
@@ -101,7 +173,7 @@
 
             <div class="model-status">
               <span class="status-dot-green"></span>
-              <span class="status-text">SYSTEM ONLINE</span>
+              <span class="status-text">WASTE_CLASSIFIER ONLINE</span>
             </div>
           </div>
         </div>
@@ -114,26 +186,15 @@
             <div class="sim-card-header">
               <div class="header-status">
                 <span class="status-dot-active"></span>
-                <span class="header-title">CONTAINERS</span>
+                <span class="header-title">MATERIAL_BINS</span>
               </div>
-              <span class="header-tag" id="container-count">[ 6 UNITS ]</span>
+              <span class="header-tag" id="container-count">[ 5 UNITS ]</span>
             </div>
             <div class="signature-line"></div>
 
-            <!-- Non-Dangerous Section -->
-            <div class="container-section">
-              <div class="section-label safe">NON-DANGEROUS</div>
-              <div id="safe-containers" class="container-row">
-                <!-- Populated by JS -->
-              </div>
-            </div>
-
-            <!-- Dangerous Section -->
-            <div class="container-section">
-              <div class="section-label danger">DANGEROUS</div>
-              <div id="danger-containers" class="container-grid">
-                <!-- Populated by JS -->
-              </div>
+            <!-- Material Containers Grid -->
+            <div class="material-containers" id="material-containers">
+              <!-- Populated by JS -->
             </div>
           </div>
 
@@ -152,7 +213,7 @@
             <div id="disposal-log" class="log-content">
               <div class="log-empty">
                 <span class="log-comment">// No disposals yet</span>
-                <span class="log-comment">// Select an item and click DISPOSE</span>
+                <span class="log-comment">// Scan an item to begin</span>
               </div>
             </div>
           </div>
@@ -161,7 +222,7 @@
     </section>
   </main>
 
-  <!-- Disposal Popup Modal -->
+  <!-- Disposal Confirmation Modal -->
   <div class="modal-overlay" id="disposal-modal">
     <div class="modal-content disposal-popup">
       <div class="modal-close" id="close-disposal-modal">+</div>
@@ -174,12 +235,16 @@
       <div class="modal-body">
         <div class="popup-details">
           <div class="detail-row">
-            <span class="detail-label">ITEM</span>
-            <span class="detail-value" id="popup-item">-</span>
+            <span class="detail-label">DETECTED</span>
+            <span class="detail-value" id="popup-object">-</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">TYPE</span>
-            <span class="detail-value" id="popup-type">-</span>
+            <span class="detail-label">CATEGORY</span>
+            <span class="detail-value" id="popup-material">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">CONFIDENCE</span>
+            <span class="detail-value" id="popup-confidence">-</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">CONTAINER</span>
@@ -196,7 +261,7 @@
     </div>
   </div>
 
-  <!-- Error Popup Modal -->
+  <!-- Error Modal -->
   <div class="modal-overlay" id="error-modal">
     <div class="modal-content error-popup">
       <div class="modal-close" id="close-error-modal">+</div>
